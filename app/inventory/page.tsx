@@ -353,11 +353,12 @@ export default function InventoryPage() {
                             </Button>
                             <Button 
                               size="icon" 
-                              variant="ghost" 
-                              className="h-8 w-8 rounded-lg"
+                              variant="outline" 
+                              className="h-10 w-10 rounded-xl bg-white border-zinc-200 shadow-sm hover:bg-zinc-50 hover:text-teal-600 transition-all hover:border-teal-200"
                               onClick={() => handleEditClick(p)}
+                              title="Edit Product"
                             >
-                              <Edit2 className="h-4 w-4 text-zinc-500" />
+                              <Edit2 className="h-4 w-4" />
                             </Button>
                           </div>
                         </td>
@@ -487,11 +488,11 @@ export default function InventoryPage() {
                     </div>
                     <div>
                       <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-zinc-600">Expiry Date</label>
-                      <div className="relative group overflow-hidden rounded-xl border border-zinc-200 focus-within:ring-2 focus-within:ring-zinc-900 transition-all">
-                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none group-focus-within:text-zinc-900" />
+                    <div className="relative group overflow-hidden rounded-xl border border-zinc-200 transition-all focus-within:ring-2 focus-within:ring-zinc-900">
+                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 group-focus-within:text-zinc-900" />
                         <Input 
                           type="date"
-                          className="text-zinc-900 pl-10 border-none bg-white h-12 [color-scheme:light] cursor-pointer focus-visible:ring-0 w-full font-bold"
+                          className="text-zinc-900 pl-10 border-none bg-transparent h-12 [color-scheme:light] cursor-pointer focus-visible:ring-0 w-full font-bold"
                           value={newProduct.initialBatch.expiryDate}
                           onChange={e => setNewProduct({...newProduct, initialBatch: {...newProduct.initialBatch, expiryDate: e.target.value}})}
                         />

@@ -204,17 +204,19 @@ export default function POSPage() {
                   
                   return (
                     <div key={p.id} className="flex flex-col border-b border-zinc-100 last:border-0 p-1">
-                    <button
+                    <div
                       className={cn(
-                        "group flex w-full items-center justify-between rounded-lg p-3 text-start transition-all focus:outline-none",
+                        "group flex w-full items-center justify-between rounded-lg p-3 text-start transition-all focus:outline-none cursor-pointer",
                         disabled 
                           ? (substitutes.length ? "hover:bg-zinc-50" : "opacity-50 cursor-not-allowed") 
                           : isReturnMode 
                             ? "hover:bg-red-50 focus:bg-red-50" 
                             : "hover:bg-zinc-50 focus:bg-zinc-50"
                       )}
-                      disabled={disabled && substitutes.length === 0}
-                      onClick={() => !disabled ? handleProductSelect(p) : setShowSubstitutesFor(showSubstitutesFor === p.id ? null : p.id)}
+                      onClick={() => {
+                        if (disabled && substitutes.length === 0) return;
+                        !disabled ? handleProductSelect(p) : setShowSubstitutesFor(showSubstitutesFor === p.id ? null : p.id);
+                      }}
                     >
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-400 border border-zinc-200/50 shadow-inner shrink-0">
@@ -241,7 +243,7 @@ export default function POSPage() {
                           <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Exp: {p.batches[0].expiryDate}</div>
                         </div>
                       </div>
-                    </button>
+                    </div>
                     {showSubstitutesFor === p.id && outOfStock && substitutes.length > 0 && (
                       <div className="pl-6 pr-2 py-2 space-y-1 bg-amber-50/50 rounded-b-lg -mt-1 border-t border-amber-100/50">
                         <div className="text-[10px] font-bold uppercase tracking-widest text-amber-600 mb-2">Available Substitutes</div>
@@ -467,37 +469,36 @@ export default function POSPage() {
           {/* Totals Area */}
           <div className="bg-white p-5 border-t border-zinc-200/80 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)]">
             
-            {cartData.length > 0 && (
-              <div className="mb-4 rounded-2xl border border-zinc-200 bg-zinc-50/50 p-3 shadow-inner">
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Cart Discount</span>
-                  <div className="flex items-center gap-1">
-                    <button 
-                      onClick={() => setCartDiscount(cartDiscountValue, cartDiscountType === 'percent' ? 'amount' : 'percent')}
-                      className="h-6 w-8 rounded-lg bg-zinc-200 text-[8px] font-black hover:bg-zinc-300 transition-colors"
-                    >
-                      {cartDiscountType === 'percent' ? '%' : 'IQD'}
-                    </button>
-                  </div>
-                </div>
-                <div className="relative">
-                  <Tag className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-300" />
-                  <Input 
-                    type="number"
-                    placeholder="Apply global discount..."
-                    value={cartDiscountValue || ''}
-                    onChange={(e) => setCartDiscount(parseFloat(e.target.value) || 0, cartDiscountType)}
-                    className="h-10 border-zinc-200 bg-white pl-10 text-sm font-bold shadow-sm focus:ring-zinc-900"
-                  />
-                </div>
-              </div>
-            )}
-
             <div className="space-y-3 mb-5">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-zinc-500 font-semibold uppercase tracking-widest">{t('subtotal')}</span>
                 <span className={cn("font-bold", cartItemsSubtotal < 0 ? "text-red-600" : "text-zinc-900")}>{cartItemsSubtotal.toLocaleString()} {t('currency')}</span>
               </div>
+              
+              {cartData.length > 0 && (
+                <div className="py-2 border-y border-zinc-100 my-2">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Apply Cart Discount</span>
+                    <button 
+                      onClick={() => setCartDiscount(cartDiscountValue, cartDiscountType === 'percent' ? 'amount' : 'percent')}
+                      className="h-6 px-2 rounded-md bg-zinc-100 text-[8px] font-black hover:bg-zinc-200 transition-colors border border-zinc-200"
+                    >
+                      {cartDiscountType === 'percent' ? 'USE IQD' : 'USE %'}
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <Tag className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-300" />
+                    <Input 
+                      type="number"
+                      placeholder="0"
+                      value={cartDiscountValue || ''}
+                      onChange={(e) => setCartDiscount(parseFloat(e.target.value) || 0, cartDiscountType)}
+                      className="h-10 border-zinc-200 bg-zinc-50/50 pl-10 text-sm font-bold shadow-none focus:bg-white focus:ring-zinc-900"
+                    />
+                  </div>
+                </div>
+              )}
+
               <div className="flex items-center justify-between text-xs">
                 <span className="text-zinc-500 font-semibold uppercase tracking-widest">{t('discount')}</span>
                 <span className="font-bold text-red-500">-{totalDiscount.toLocaleString()} {t('currency')}</span>

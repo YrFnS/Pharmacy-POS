@@ -103,10 +103,10 @@ export default function CustomersPage() {
         <div className="flex-1 overflow-y-auto p-4">
           <div className="space-y-2">
             {filteredCustomers.map(c => (
-              <button
+              <div
                 key={c.id}
                 onClick={() => setSelectedCustomerId(c.id)}
-                className={`flex w-full items-center justify-between rounded-xl p-4 text-left transition-all ${
+                className={`flex w-full items-center justify-between rounded-xl p-4 text-left transition-all cursor-pointer ${
                   selectedCustomerId === c.id 
                     ? 'bg-zinc-900 text-white shadow-md shadow-zinc-900/10' 
                     : 'hover:bg-zinc-100'
@@ -143,7 +143,7 @@ export default function CustomersPage() {
                     </Button>
                   )}
                 </div>
-              </button>
+              </div>
             ))}
           </div>
         </div>
