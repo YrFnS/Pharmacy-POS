@@ -6,13 +6,27 @@ import { Save, Store, Users, Receipt, CheckCircle2, UserPlus, X, Trash2 } from '
 import { useStore, User } from '@/lib/store';
 
 export default function SettingsPage() {
-  const { settings, updateSettings, users, addUser, updateUser, deleteUser } = useStore();
+  const { settings, updateSettings, users, addUser, updateUser, deleteUser, currentUser } = useStore();
   
   const [localSettings, setLocalSettings] = useState(settings);
   const [success, setSuccess] = useState(false);
   
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
   const [newUser, setNewUser] = useState({ name: '', email: '', role: 'cashier' as User['role'] });
+
+  if (currentUser?.role === 'cashier') {
+    return (
+      <div className="flex h-full items-center justify-center bg-[#F9FAFB]">
+        <div className="text-center p-8 bg-white rounded-3xl border border-zinc-200 shadow-xl max-w-sm">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-red-500">
+             <X className="h-8 w-8" />
+          </div>
+          <h2 className="text-xl font-bold text-zinc-900">Access Denied</h2>
+          <p className="mt-2 text-zinc-500">You do not have permission to modify system settings.</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleSaveSettings = () => {
     updateSettings(localSettings);
@@ -180,6 +194,36 @@ export default function SettingsPage() {
                      ))}
                   </tbody>
                </table>
+            </div>
+          </section>
+
+          {/* Preferences */}
+          <section>
+            <div className="mb-6 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-200/50 text-zinc-500">
+                <Store className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-zinc-900">Preferences</h2>
+                <p className="text-xs font-semibold text-zinc-500">Theme and display settings.</p>
+              </div>
+            </div>
+            <div className="rounded-3xl border border-zinc-200/50 bg-white p-8 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-bold text-zinc-900">Dark Mode</p>
+                  <p className="text-sm font-semibold text-zinc-500">Switch to a darker theme for low-light environments.</p>
+                </div>
+                <label className="relative inline-flex cursor-pointer items-center">
+                  <input 
+                    type="checkbox" 
+                    className="peer sr-only" 
+                    checked={localSettings.isDarkMode}
+                    onChange={(e) => setLocalSettings(prev => ({ ...prev, isDarkMode: e.target.checked }))}
+                  />
+                  <div className="peer h-7 w-14 rounded-full bg-zinc-200 after:absolute after:start-[4px] after:top-[4px] after:h-5 after:w-5 after:rounded-full after:border after:border-zinc-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-zinc-900 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-zinc-900 peer-focus:ring-offset-2"></div>
+                </label>
+              </div>
             </div>
           </section>
 

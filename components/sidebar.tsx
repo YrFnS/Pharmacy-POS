@@ -12,12 +12,14 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/use-translation';
+import { useStore } from '@/lib/store';
 
 import Image from 'next/image';
 
-export function Sidebar() {
+export function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname();
   const { t, isRtl } = useTranslation();
+  const { currentUser, language, setLanguage } = useStore();
 
   const links = [
     { href: '/', icon: ShoppingCart, label: 'POS' },
@@ -25,11 +27,11 @@ export function Sidebar() {
     { href: '/procurement', icon: Clock, label: 'Procurement' },
     { href: '/customers', icon: Users, label: 'Customers' },
     { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { href: '/settings', icon: Settings, label: 'Settings' },
-  ];
+    { href: '/settings', icon: Settings, label: 'Settings', hideForCashier: true },
+  ].filter(link => !(link.hideForCashier && currentUser?.role === 'cashier'));
 
   return (
-    <aside className="flex flex-col items-center py-6 w-20 bg-white border-e border-zinc-200/50 shadow-sm z-50 shrink-0">
+    <aside className={cn("flex flex-col items-center py-6 bg-white border-e border-zinc-200/50 shadow-sm z-50 shrink-0", className)}>
       {/* Brand logo space */}
       <div className="mb-8">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-600 text-white shadow-md shadow-teal-600/20">
@@ -58,7 +60,7 @@ export function Sidebar() {
           );
         })}
       </nav>
-      
+
       {/* User profile / Logout space down here */}
       <div className="mt-auto">
         <div className="relative h-10 w-10 overflow-hidden rounded-full border border-zinc-200">

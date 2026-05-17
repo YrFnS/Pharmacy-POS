@@ -3,14 +3,23 @@
 import React, { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { Input, Button } from '@/components/ui';
-import { Search, Plus, Filter, Package, AlertTriangle, ArrowDownToLine, MoreVertical, X, CheckCircle2, Trash2, Edit2 } from 'lucide-react';
+import { Search, Plus, Filter, Package, AlertTriangle, ArrowDownToLine, MoreVertical, X, CheckCircle2, Trash2, Edit2, Pill, FlaskConical, Droplet, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+const getProductIcon = (category: string) => {
+  const cat = category.toLowerCase();
+  if (cat.includes('syrup') || cat.includes('oral') || cat.includes('gastro')) return <FlaskConical className="h-3 w-3" />;
+  if (cat.includes('topical') || cat.includes('cream') || cat.includes('ointment')) return <Droplet className="h-3 w-3" />;
+  return <Pill className="h-3 w-3" />;
+};
 
 export default function InventoryPage() {
   const { products, addProduct, updateProduct, deleteProduct } = useStore();
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   // Form state
   const [newProduct, setNewProduct] = useState({
@@ -18,22 +27,55 @@ export default function InventoryPage() {
     brandName: '',
     genericName: '',
     category: 'Pain Relief',
+    initialBatch: {
+      batchNo: '',
+      expiryDate: '',
+      quantity: '',
+      price: '',
+    }
   });
 
   const toggleRow = (id: string) => {
     setExpandedRows(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const filteredProducts = products.filter(p => 
-    p.brandName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.barcode.includes(searchQuery)
-  );
+  const filteredProducts = products.filter(p => {
+    const matchesSearch = p.brandName.toLowerCase().includes(searchQuery.toLowerCase()) || p.barcode.includes(searchQuery);
+    const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const categories = ['All', ...Array.from(new Set(products.map(p => p.category)))];
 
   const handleAddProduct = () => {
     if (!newProduct.brandName || !newProduct.barcode) return;
-    addProduct(newProduct);
+    
+    // Ensure at least one batch exists or create a placeholder one to prevent crashes
+    const batches = [];
+    batches.push({
+      id: Math.random().toString(36).substr(2, 9),
+      batchNo: newProduct.initialBatch.batchNo || 'INITIAL',
+      expiryDate: newProduct.initialBatch.expiryDate || new Date(new Date().setFullYear(new Date().getFullYear() + 2)).toISOString().split('T')[0],
+      quantity: parseInt(newProduct.initialBatch.quantity) || 0,
+      price: parseInt(newProduct.initialBatch.price) || 0,
+    });
+
+    addProduct({
+      barcode: newProduct.barcode,
+      brandName: newProduct.brandName,
+      genericName: newProduct.genericName,
+      category: newProduct.category,
+      batches: batches,
+    });
+
     setIsAddModalOpen(false);
-    setNewProduct({ barcode: '', brandName: '', genericName: '', category: 'Pain Relief' });
+    setNewProduct({ 
+      barcode: '', 
+      brandName: '', 
+      genericName: '', 
+      category: 'Pain Relief',
+      initialBatch: { batchNo: '', expiryDate: '', quantity: '', price: '' }
+    });
   };
 
   const lowStockThreshold = 20;
@@ -60,7 +102,7 @@ export default function InventoryPage() {
           <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400">Master Product List</p>
         </div>
         <div className="flex gap-3">
-           <Button variant="outline" className="gap-2 rounded-xl">
+           <Button variant="outline" className="gap-2 rounded-xl" onClick={() => window.print()}>
              <ArrowDownToLine className="h-4 w-4" />
              Export
            </Button>
@@ -90,7 +132,7 @@ export default function InventoryPage() {
             </div>
             <div className="rounded-2xl border border-zinc-200/50 bg-white p-5 shadow-sm">
                <div className="flex items-center gap-3">
-                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50 text-red-600">
+                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 text-orange-600">
                    <AlertTriangle className="h-5 w-5" />
                  </div>
                  <div>
@@ -102,7 +144,7 @@ export default function InventoryPage() {
              <div className="rounded-2xl border border-zinc-200/50 bg-white p-5 shadow-sm">
                <div className="flex items-center gap-3">
                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
-                   <AlertTriangle className="h-5 w-5" />
+                   <Clock className="h-5 w-5" />
                  </div>
                  <div>
                    <p className="text-sm font-bold text-zinc-500">Expiring Soon</p>
@@ -123,26 +165,36 @@ export default function InventoryPage() {
                 onChange={e => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button variant="outline" className="gap-2 rounded-xl text-zinc-600">
-              <Filter className="h-4 w-4" />
-              Filters
-            </Button>
+            <div className="flex gap-2">
+              <select 
+                className="appearance-none h-10 px-4 rounded-xl border border-zinc-200 text-sm font-semibold text-zinc-600 outline-none cursor-pointer focus:ring-2 focus:ring-zinc-900 focus:border-zinc-900"
+                value={selectedCategory}
+                onChange={e => setSelectedCategory(e.target.value)}
+              >
+                {categories.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <Button variant="outline" className="gap-2 rounded-xl text-zinc-600">
+                <Filter className="h-4 w-4" />
+                More Filters
+              </Button>
+            </div>
           </div>
 
           {/* Data Table */}
-          <div className="overflow-hidden rounded-2xl border border-zinc-200/50 bg-white shadow-sm">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-zinc-100 bg-zinc-50/50">
-                <tr>
-                  <th className="px-6 py-4 font-bold text-zinc-500 uppercase tracking-widest text-[10px]">Product / Generic</th>
-                  <th className="px-6 py-4 font-bold text-zinc-500 uppercase tracking-widest text-[10px]">Category</th>
-                  <th className="px-6 py-4 font-bold text-zinc-500 uppercase tracking-widest text-[10px]">Barcode</th>
-                  <th className="px-6 py-4 font-bold text-zinc-500 uppercase tracking-widest text-[10px] text-right">Total Qty</th>
-                  <th className="px-6 py-4 w-12"></th>
-                  <th className="px-6 py-4 w-12"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-100">
+          <div className="overflow-hidden rounded-2xl border border-zinc-200/50 bg-white shadow-sm flex flex-col h-[calc(100vh-320px)]">
+            <div className="overflow-auto flex-1 relative">
+              <table className="w-full text-left text-sm relative">
+                <thead className="bg-zinc-50/90 backdrop-blur sticky top-0 z-10 shadow-sm">
+                  <tr>
+                    <th className="px-6 py-4 font-bold text-zinc-500 uppercase tracking-widest text-[10px]">Product / Generic</th>
+                    <th className="px-6 py-4 font-bold text-zinc-500 uppercase tracking-widest text-[10px]">Category</th>
+                    <th className="px-6 py-4 font-bold text-zinc-500 uppercase tracking-widest text-[10px]">Barcode</th>
+                    <th className="px-6 py-4 font-bold text-zinc-500 uppercase tracking-widest text-[10px] text-right">Total Qty</th>
+                    <th className="px-6 py-4 w-12"></th>
+                    <th className="px-6 py-4 w-12"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-100">
                 {filteredProducts.map(p => {
                   const totalQty = p.batches.reduce((sum, b) => sum + b.quantity, 0);
                   const isExpanded = expandedRows[p.id];
@@ -155,7 +207,8 @@ export default function InventoryPage() {
                           <div className="text-xs font-semibold text-zinc-500">{p.genericName}</div>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="inline-flex rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-bold text-zinc-600">
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100 px-3 py-1 text-xs font-bold text-zinc-600">
+                            {getProductIcon(p.category)}
                             {p.category}
                           </span>
                         </td>
@@ -169,19 +222,33 @@ export default function InventoryPage() {
                           </span>
                         </td>
                         <td className="px-2 py-4">
-                           <Button 
-                             size="sm" 
-                             variant="ghost" 
-                             className="h-8 w-8 rounded-lg p-0"
-                             onClick={() => toggleRow(p.id)}
-                           >
-                             <ArrowDownToLine className={cn("h-4 w-4 transition-transform", isExpanded ? "rotate-180" : "")} />
-                           </Button>
+                            <Button 
+                              size="sm" 
+                              variant="ghost" 
+                              className="h-8 w-8 rounded-lg p-0 text-teal-600 hover:bg-teal-50"
+                              onClick={() => toggleRow(p.id)}
+                              title={isExpanded ? 'Hide Details' : 'Show Details'}
+                            >
+                              {isExpanded ? <Plus className="h-4 w-4 rotate-45 transition-transform" /> : <MoreVertical className="h-4 w-4" />}
+                            </Button>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
-                            <Button size="icon" variant="ghost" className="h-8 w-8 rounded-lg" onClick={() => deleteProduct(p.id)}>
-                              <Trash2 className="h-4 w-4 text-red-500" />
+                            <Button 
+                              size="icon" 
+                              variant="ghost" 
+                              className={cn("h-8 w-8 rounded-lg transition-colors", deleteConfirmId === p.id ? "bg-red-500 text-white hover:bg-red-600" : "text-red-500")}
+                              onClick={() => {
+                                if (deleteConfirmId === p.id) {
+                                  deleteProduct(p.id);
+                                  setDeleteConfirmId(null);
+                                } else {
+                                  setDeleteConfirmId(p.id);
+                                  setTimeout(() => setDeleteConfirmId(null), 3000);
+                                }
+                              }}
+                            >
+                              {deleteConfirmId === p.id ? <CheckCircle2 className="h-4 w-4" /> : <Trash2 className="h-4 w-4" />}
                             </Button>
                             <Button size="icon" variant="ghost" className="h-8 w-8 rounded-lg">
                               <Edit2 className="h-4 w-4 text-zinc-500" />
@@ -229,6 +296,7 @@ export default function InventoryPage() {
                 })}
               </tbody>
             </table>
+            </div>
           </div>
 
         </div>
@@ -293,7 +361,50 @@ export default function InventoryPage() {
                      <option>Antibiotics</option>
                      <option>Cholesterol</option>
                      <option>Respiratory</option>
+                     <option>Gastrointestinal</option>
+                     <option>Antihistamine</option>
+                     <option>Topical Pain Relief</option>
                   </select>
+                </div>
+
+                <div className="col-span-2 pt-4 border-t border-zinc-100">
+                  <h4 className="text-xs font-bold uppercase tracking-widest text-teal-600 mb-4">Initial Stock (Batch)</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-zinc-400">Batch Number</label>
+                      <Input 
+                        placeholder="e.g. B123" 
+                        value={newProduct.initialBatch.batchNo}
+                        onChange={e => setNewProduct({...newProduct, initialBatch: {...newProduct.initialBatch, batchNo: e.target.value}})}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-zinc-400">Expiry Date</label>
+                      <Input 
+                        type="date"
+                        value={newProduct.initialBatch.expiryDate}
+                        onChange={e => setNewProduct({...newProduct, initialBatch: {...newProduct.initialBatch, expiryDate: e.target.value}})}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-zinc-400">Quantity</label>
+                      <Input 
+                        type="number"
+                        placeholder="0"
+                        value={newProduct.initialBatch.quantity}
+                        onChange={e => setNewProduct({...newProduct, initialBatch: {...newProduct.initialBatch, quantity: e.target.value}})}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-zinc-400">Sale Price (IQD)</label>
+                      <Input 
+                        type="number"
+                        placeholder="0"
+                        value={newProduct.initialBatch.price}
+                        onChange={e => setNewProduct({...newProduct, initialBatch: {...newProduct.initialBatch, price: e.target.value}})}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

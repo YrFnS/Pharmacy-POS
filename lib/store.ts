@@ -164,7 +164,8 @@ export interface CartItem {
   productId: string;
   batchId: string;
   quantity: number;
-  discountPercent: number;
+  discountValue: number;
+  discountType: 'percent' | 'amount';
   isReturn?: boolean;
 }
 
@@ -181,6 +182,7 @@ export interface Settings {
   address: string;
   receiptFooter: string;
   printReceipts: boolean;
+  isDarkMode: boolean;
 }
 
 interface POSState {
@@ -195,7 +197,7 @@ interface POSState {
   transactions: Transaction[];
 
   setProducts: (products: Product[]) => void;
-  addProduct: (product: Omit<Product, 'id' | 'batches'>) => void;
+  addProduct: (product: Omit<Product, 'id'>) => void;
   updateProduct: (product: Product) => void;
   deleteProduct: (id: string) => void;
   receiveStock: (productId: string, batch: Omit<Batch, 'id'>) => void;
@@ -203,6 +205,7 @@ interface POSState {
   addCustomer: (customer: Omit<Customer, 'id' | 'debt'>) => void;
   updateCustomer: (customer: Customer) => void;
   settleDebt: (customerId: string, amount: number) => void;
+  deleteCustomer: (id: string) => void;
 
   isShiftOpen: boolean;
   setIsShiftOpen: (shift: boolean) => void;
@@ -212,10 +215,13 @@ interface POSState {
   setIsShiftModalOpen: (open: boolean) => void;
 
   cart: CartItem[];
-  heldCarts: { id: string, cart: CartItem[], timestamp: number }[];
+  cartDiscountValue: number;
+  cartDiscountType: 'percent' | 'amount';
+  heldCarts: { id: string, cart: CartItem[], timestamp: number, discountValue: number, discountType: 'percent' | 'amount' }[];
   addToCart: (productId: string, batchId: string) => void;
   updateQuantity: (cartItemId: string, delta: number) => void;
-  setDiscount: (cartItemId: string, discountPercent: number) => void;
+  setDiscount: (cartItemId: string, value: number, type: 'percent' | 'amount') => void;
+  setCartDiscount: (value: number, type: 'percent' | 'amount') => void;
   removeFromCart: (cartItemId: string) => void;
   clearCart: () => void;
   holdCart: () => void;
@@ -234,9 +240,17 @@ interface POSState {
   addUser: (user: Omit<User, 'id'>) => void;
   updateUser: (user: User) => void;
   deleteUser: (id: string) => void;
+  
+  currentUser: User | null;
+  setCurrentUser: (user: User | null) => void;
 }
 
-const generateId = () => Math.random().toString(36).substr(2, 9);
+const generateId = () => {
+  if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+    return window.crypto.randomUUID();
+  }
+  return Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+};
 
 export const useStore = create<POSState>((set, get) => ({
   language: 'en',
@@ -251,7 +265,7 @@ export const useStore = create<POSState>((set, get) => ({
 
   setProducts: (products) => set({ products }),
   addProduct: (newProd) => set(state => ({
-    products: [...state.products, { ...newProd, id: generateId(), batches: [] }]
+    products: [...state.products, { ...newProd, id: generateId() }]
   })),
   updateProduct: (updated) => set(state => ({
     products: state.products.map(p => p.id === updated.id ? updated : p)
@@ -273,6 +287,9 @@ export const useStore = create<POSState>((set, get) => ({
   updateCustomer: (updated) => set(state => ({
     customers: state.customers.map(c => c.id === updated.id ? updated : c)
   })),
+  deleteCustomer: (id) => set(state => ({
+    customers: state.customers.filter(c => c.id !== id)
+  })),
   settleDebt: (customerId, amount) => set(state => ({
     customers: state.customers.map(c => 
       c.id === customerId ? { ...c, debt: Math.max(0, c.debt - amount) } : c
@@ -287,6 +304,8 @@ export const useStore = create<POSState>((set, get) => ({
   setIsShiftModalOpen: (open) => set({ isShiftModalOpen: open }),
 
   cart: [],
+  cartDiscountValue: 0,
+  cartDiscountType: 'percent',
   heldCarts: [],
   addToCart: (productId, batchId) => {
     const { cart, isReturnMode } = get();
@@ -307,7 +326,8 @@ export const useStore = create<POSState>((set, get) => ({
           productId, 
           batchId, 
           quantity: 1, 
-          discountPercent: 0,
+          discountValue: 0,
+          discountType: 'percent',
           isReturn: isReturnMode
         }]
       });
@@ -326,12 +346,16 @@ export const useStore = create<POSState>((set, get) => ({
     }));
   },
 
-  setDiscount: (cartItemId, discountPercent) => {
+  setDiscount: (cartItemId, discountValue, discountType) => {
     set(state => ({
       cart: state.cart.map(item => 
-        item.cartItemId === cartItemId ? { ...item, discountPercent } : item
+        item.cartItemId === cartItemId ? { ...item, discountValue, discountType } : item
       )
     }));
+  },
+
+  setCartDiscount: (cartDiscountValue, cartDiscountType) => {
+    set({ cartDiscountValue, cartDiscountType });
   },
   
   removeFromCart: (cartItemId) => {
@@ -340,14 +364,22 @@ export const useStore = create<POSState>((set, get) => ({
     }));
   },
   
-  clearCart: () => set({ cart: [] }),
+  clearCart: () => set({ cart: [], cartDiscountValue: 0, cartDiscountType: 'percent' }),
   
   holdCart: () => {
     set(state => {
       if (state.cart.length === 0) return state;
       return {
-        heldCarts: [...state.heldCarts, { id: generateId(), cart: [...state.cart], timestamp: Date.now() }],
-        cart: []
+        heldCarts: [...state.heldCarts, { 
+          id: generateId(), 
+          cart: [...state.cart], 
+          timestamp: Date.now(),
+          discountValue: state.cartDiscountValue,
+          discountType: state.cartDiscountType
+        }],
+        cart: [],
+        cartDiscountValue: 0,
+        cartDiscountType: 'percent'
       };
     });
   },
@@ -358,6 +390,8 @@ export const useStore = create<POSState>((set, get) => ({
       if (!held) return state;
       return {
         cart: held.cart,
+        cartDiscountValue: held.discountValue,
+        cartDiscountType: held.discountType,
         heldCarts: state.heldCarts.filter(h => h.id !== id)
       };
     });
@@ -370,10 +404,10 @@ export const useStore = create<POSState>((set, get) => ({
   setPaymentModalOpen: (open) => set({ isPaymentModalOpen: open }),
 
   completeSale: (paymentMethod) => {
-    const { cart, products, customers, customerId, transactions } = get();
+    const { cart, products, customers, customerId, transactions, cartDiscountValue, cartDiscountType } = get();
     if (cart.length === 0) return;
 
-    let grandTotal = 0;
+    let subtotalItems = 0;
     const transactionItems: TransactionItem[] = [];
 
     // 1. Calculate Totals and prepare transaction items
@@ -381,24 +415,39 @@ export const useStore = create<POSState>((set, get) => ({
       const product = products.find(p => p.id === item.productId);
       const batch = product?.batches.find(b => b.id === item.batchId);
       const price = batch?.price || 0;
-      const discount = price * (item.discountPercent / 100);
-      const finalPrice = price - discount;
-      const itemTotal = finalPrice * item.quantity * (item.isReturn ? -1 : 1);
       
-      grandTotal += itemTotal;
+      let itemDiscount = 0;
+      if (item.discountType === 'percent') {
+        itemDiscount = price * (item.discountValue / 100);
+      } else {
+        itemDiscount = item.discountValue;
+      }
+      
+      const finalPrice = price - itemDiscount;
+      subtotalItems += finalPrice * item.quantity * (item.isReturn ? -1 : 1);
+      
       transactionItems.push({
         productId: item.productId,
         batchId: item.batchId,
         quantity: item.quantity,
         price,
-        discount: item.discountPercent,
+        discount: item.discountValue,
         isReturn: !!item.isReturn
       });
     });
 
+    let grandTotal = subtotalItems;
+    if (cartDiscountValue > 0) {
+      if (cartDiscountType === 'percent') {
+        grandTotal = subtotalItems * (1 - cartDiscountValue / 100);
+      } else {
+        grandTotal = subtotalItems - cartDiscountValue;
+      }
+    }
+
     // 2. Add to Transactions
     const newTransaction: Transaction = {
-      id: generateId(),
+      id: `TXN-${Date.now()}-${generateId().slice(0, 4).toUpperCase()}`,
       customerId,
       items: transactionItems,
       total: grandTotal,
@@ -436,6 +485,8 @@ export const useStore = create<POSState>((set, get) => ({
       products: updatedProducts,
       customers: updatedCustomers,
       cart: [],
+      cartDiscountValue: 0,
+      cartDiscountType: 'percent',
       isPaymentModalOpen: false
     });
   },
@@ -445,7 +496,8 @@ export const useStore = create<POSState>((set, get) => ({
     currency: 'IQD',
     address: 'Baghdad, Mansour Dist, 14th St',
     receiptFooter: 'Thank you for your visit. No refunds on open medicine.',
-    printReceipts: true
+    printReceipts: true,
+    isDarkMode: false
   },
   updateSettings: (newSettings) => set(state => ({ settings: { ...state.settings, ...newSettings } })),
 
@@ -453,6 +505,8 @@ export const useStore = create<POSState>((set, get) => ({
     { id: 'u1', name: 'Dr. Ahmed', email: 'ahmed@alshifa.com', role: 'manager' },
     { id: 'u2', name: 'Ali Cashier', email: 'ali@alshifa.com', role: 'cashier' }
   ],
+  currentUser: { id: 'u1', name: 'Dr. Ahmed', email: 'ahmed@alshifa.com', role: 'manager' },
+  setCurrentUser: (user) => set({ currentUser: user }),
   addUser: (user) => set(state => ({ users: [...state.users, { ...user, id: generateId() }] })),
   updateUser: (updated) => set(state => ({ users: state.users.map(u => u.id === updated.id ? updated : u) })),
   deleteUser: (id) => set(state => ({ users: state.users.filter(u => u.id !== id) }))

@@ -6,7 +6,7 @@ import { useStore } from '@/lib/store';
 import { Button, Input } from '@/components/ui';
 import { PaymentModal } from '@/components/payment-modal';
 import { ShiftModal } from '@/components/shift-modal';
-import { Search, Trash2, Plus, Minus, CreditCard, Globe, ScrollText, User as UserIcon, Tag, Pill, PauseCircle, PlayCircle, Percent } from 'lucide-react';
+import { Search, Trash2, Plus, Minus, CreditCard, Globe, ScrollText, User as UserIcon, Tag, Pill, PauseCircle, PlayCircle, Percent, FlaskConical, Droplet } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function POSPage() {
@@ -14,6 +14,9 @@ export default function POSPage() {
   const { 
     setLanguage, 
     cart,
+    cartDiscountValue,
+    cartDiscountType,
+    setCartDiscount,
     heldCarts,
     holdCart,
     resumeCart,
@@ -35,6 +38,8 @@ export default function POSPage() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [showSubstitutesFor, setShowSubstitutesFor] = useState<string | null>(null);
+  const [selectedProductDetails, setSelectedProductDetails] = useState<any>(null);
+  const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
 
   useEffect(() => {
     document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
@@ -52,17 +57,36 @@ export default function POSPage() {
   }, [searchQuery, products]);
 
   const handleProductSelect = (product: any) => {
-    const batch = product.batches[0];
-    if (!batch || (batch.quantity <= 0 && !isReturnMode)) return;
-    addToCart(product.id, batch.id);
+    setSelectedProductDetails(product);
+    const firstBatch = product.batches.find((b: any) => b.quantity > 0);
+    if (firstBatch) setSelectedBatchId(firstBatch.id);
+  };
+  
+  const handleAddToCart = (product: any, batchId: string) => {
+    addToCart(product.id, batchId);
+    setSelectedProductDetails(null);
+    setSelectedBatchId(null);
     setSearchQuery('');
+  };
+
+  const [expandedCartItems, setExpandedCartItems] = useState<Record<string, boolean>>({});
+
+  const toggleCartItem = (id: string) => {
+    setExpandedCartItems(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
   const cartData = cart.map(item => {
     const product = products.find(p => p.id === item.productId);
     const batch = product?.batches.find(b => b.id === item.batchId);
     const price = batch?.price || 0;
-    const discountAmount = price * (item.discountPercent / 100);
+    
+    let discountAmount = 0;
+    if (item.discountType === 'percent') {
+      discountAmount = price * (item.discountValue / 100);
+    } else {
+      discountAmount = item.discountValue;
+    }
+    
     const finalPrice = price - discountAmount;
     return {
       ...item,
@@ -72,8 +96,31 @@ export default function POSPage() {
     };
   });
 
-  const subtotal = cartData.reduce((sum, item) => sum + item.total, 0);
-  const totalDiscount = cartData.reduce((sum, item) => sum + ((item.batch?.price || 0) * (item.discountPercent / 100) * item.quantity), 0);
+  const cartItemsSubtotal = cartData.reduce((sum, item) => sum + item.total, 0);
+  
+  let subtotal = cartItemsSubtotal;
+  let cartDiscountAmount = 0;
+  if (cartDiscountValue > 0) {
+    if (cartDiscountType === 'percent') {
+      cartDiscountAmount = cartItemsSubtotal * (cartDiscountValue / 100);
+    } else {
+      cartDiscountAmount = cartDiscountValue;
+    }
+    subtotal = cartItemsSubtotal - cartDiscountAmount;
+  }
+
+  const itemsTotalDiscount = cartData.reduce((sum, item) => {
+    const price = item.batch?.price || 0;
+    let itemDiscount = 0;
+    if (item.discountType === 'percent') {
+      itemDiscount = price * (item.discountValue / 100) * item.quantity;
+    } else {
+      itemDiscount = item.discountValue * item.quantity;
+    }
+    return sum + itemDiscount;
+  }, 0);
+  
+  const totalDiscount = itemsTotalDiscount + cartDiscountAmount;
   
   const getSubstitutes = (genericName: string, excludeId: string) => {
     return products.filter(p => p.genericName === genericName && p.id !== excludeId && p.batches.some(b => b.quantity > 0));
@@ -89,7 +136,22 @@ export default function POSPage() {
           </div>
           <h1 className="text-xl font-bold tracking-tight">{t('app_title')}</h1>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1 rounded-xl bg-zinc-100 p-1 shadow-inner border border-zinc-200/50">
+             <button 
+               onClick={() => setLanguage('en')}
+               className={cn("px-3 py-1 text-[10px] font-black uppercase rounded-lg transition-all", language === 'en' ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-400 hover:text-zinc-600")}
+             >
+               EN
+             </button>
+             <button 
+               onClick={() => setLanguage('ar')}
+               className={cn("px-3 py-1 text-[10px] font-black uppercase rounded-lg transition-all", language === 'ar' ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-400 hover:text-zinc-600")}
+             >
+               AR
+             </button>
+          </div>
+
           <div className="flex items-center gap-2 rounded-xl bg-zinc-100 p-1 pl-4">
              <div className="flex flex-col text-end">
                <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Shift</span>
@@ -112,15 +174,6 @@ export default function POSPage() {
             <span className="text-sm font-semibold text-zinc-900">Dr. Ahmed</span>
           </div>
           <div className="h-8 w-px bg-zinc-200"></div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
-            className="gap-2 rounded-lg"
-          >
-            <Globe className="h-4 w-4 text-zinc-500" />
-            <span className="font-semibold">{language === 'en' ? 'عربي' : 'English'}</span>
-          </Button>
         </div>
       </header>
 
@@ -154,12 +207,19 @@ export default function POSPage() {
                     <button
                       className={cn(
                         "group flex w-full items-center justify-between rounded-lg p-3 text-start transition-all focus:outline-none",
-                        disabled ? (substitutes.length ? "hover:bg-zinc-50" : "opacity-50 cursor-not-allowed") : "hover:bg-zinc-50 focus:bg-zinc-50"
+                        disabled 
+                          ? (substitutes.length ? "hover:bg-zinc-50" : "opacity-50 cursor-not-allowed") 
+                          : isReturnMode 
+                            ? "hover:bg-red-50 focus:bg-red-50" 
+                            : "hover:bg-zinc-50 focus:bg-zinc-50"
                       )}
                       disabled={disabled && substitutes.length === 0}
                       onClick={() => !disabled ? handleProductSelect(p) : setShowSubstitutesFor(showSubstitutesFor === p.id ? null : p.id)}
                     >
                       <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-400 border border-zinc-200/50 shadow-inner shrink-0">
+                           {p.category.toLowerCase().includes('syrup') || p.category.toLowerCase().includes('gastro') || p.category.toLowerCase().includes('respiratory') ? <FlaskConical className="h-5 w-5" /> : p.category.toLowerCase().includes('topical') ? <Droplet className="h-5 w-5" /> : <Pill className="h-5 w-5" />}
+                        </div>
                         <div>
                           <div className={cn("font-bold", !outOfStock ? "text-zinc-900" : "text-zinc-400")}>{p.brandName}</div>
                           <div className="text-xs font-medium text-zinc-500">
@@ -217,18 +277,22 @@ export default function POSPage() {
                  const outOfStock = !p.batches[0] || p.batches[0].quantity <= 0;
                  const disabled = outOfStock && !isReturnMode;
                  return (
-                 <button 
-                   key={p.id}
-                   className={cn(
-                     "flex flex-col items-start rounded-2xl border border-zinc-200/60 bg-white p-4 text-left shadow-sm transition-all active:scale-[0.98]",
-                     disabled ? "opacity-50 cursor-not-allowed" : "hover:border-teal-500/30 hover:bg-teal-50/10 hover:shadow-md"
-                   )}
-                   disabled={disabled}
-                   onClick={() => handleProductSelect(p)}
-                 >
+                  <button 
+                    key={p.id}
+                    className={cn(
+                      "flex flex-col items-start rounded-2xl border p-4 text-left shadow-sm transition-all active:scale-[0.98] bg-white",
+                      disabled 
+                        ? "opacity-50 cursor-not-allowed border-zinc-100" 
+                        : isReturnMode 
+                          ? "border-red-100 hover:border-red-500/30 hover:bg-red-50/50 hover:shadow-md" 
+                          : "border-zinc-200/60 hover:border-teal-500/30 hover:bg-teal-50/10 hover:shadow-md"
+                    )}
+                    disabled={disabled}
+                    onClick={() => handleProductSelect(p)}
+                  >
                     <div className="mb-4 flex flex-row w-full justify-between items-start">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-400">
-                         <Pill className="h-5 w-5" />
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-400 border border-zinc-200/50 shadow-inner">
+                         {p.category.toLowerCase().includes('syrup') || p.category.toLowerCase().includes('gastro') || p.category.toLowerCase().includes('respiratory') ? <FlaskConical className="h-5 w-5" /> : p.category.toLowerCase().includes('topical') ? <Droplet className="h-5 w-5" /> : <Pill className="h-5 w-5" />}
                       </div>
                       {outOfStock ? (
                         <span className="text-[9px] font-bold uppercase tracking-wider text-red-500 bg-red-50 px-2 py-1 rounded-full">Out of stock</span>
@@ -243,9 +307,6 @@ export default function POSPage() {
                       <div className={cn("text-sm font-black focus:outline-none", outOfStock ? "text-zinc-400" : "text-teal-600")}>
                         {p.batches[0].price.toLocaleString()} <span className="text-[10px]">IQD</span>
                       </div>
-                      <div className="flex h-6 w-6 items-center justify-center rounded-md bg-zinc-100 text-zinc-400">
-                        <Plus className="h-3 w-3" />
-                      </div>
                     </div>
                  </button>
                  );
@@ -255,7 +316,13 @@ export default function POSPage() {
         </div>
 
         {/* Right column: Cart, Customer, Totals */}
-        <div className="w-[420px] shrink-0 border-s border-zinc-200/50 bg-white flex flex-col shadow-[-10px_0_30px_-10px_rgba(0,0,0,0.02)] z-10">
+        <div 
+          className={cn(
+            "w-[420px] shrink-0 border-s border-zinc-200/50 flex flex-col shadow-[-10px_0_30px_-10px_rgba(0,0,0,0.02)] z-10 select-none transition-colors",
+            isReturnMode ? "bg-red-50/20" : "bg-white"
+          )}
+        >
+
           
           {/* Customer Selection */}
           <div className="border-b border-zinc-100 p-4">
@@ -298,7 +365,7 @@ export default function POSPage() {
             ) : (
                <div className="space-y-4 pt-2">
                   {cartData.map((item) => (
-                     <div key={item.cartItemId} className={cn("group relative flex flex-col gap-3 rounded-xl border p-3 shadow-sm transition-colors", item.isReturn ? "border-red-200/60 bg-red-50/30 hover:border-red-300" : "border-zinc-200/60 bg-white hover:border-zinc-300")}>
+                    <div key={item.cartItemId} className={cn("group relative flex flex-col gap-3 rounded-xl border p-3 shadow-sm transition-colors", item.isReturn ? "border-red-200/60 bg-red-50/30 hover:border-red-300" : "border-zinc-200/60 bg-white hover:border-zinc-300")}>
                         {item.isReturn && (
                            <div className="absolute -top-2 left-3 rounded text-[9px] font-bold uppercase tracking-wider bg-red-100 px-1.5 py-0.5 text-red-700 shadow-sm border border-red-200/50">Return</div>
                         )}
@@ -339,29 +406,58 @@ export default function POSPage() {
                           </div>
                           
                           <div className="flex items-center gap-1 mx-2">
-                             <div className="relative">
-                                <Percent className="absolute left-1.5 top-1/2 -translate-y-1/2 h-3 w-3 text-zinc-400" />
+                             <div className="relative group">
+                                <button 
+                                  onClick={() => setDiscount(item.cartItemId, item.discountValue, item.discountType === 'percent' ? 'amount' : 'percent')}
+                                  className="absolute left-1 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-md bg-zinc-100 text-[8px] font-black hover:bg-zinc-200 transition-colors"
+                                  title="Switch Discount Type"
+                                >
+                                  {item.discountType === 'percent' ? '%' : 'IQD'}
+                                </button>
                                 <input 
                                   type="number"
-                                  className="w-14 rounded-md border border-zinc-200 bg-white py-1 pl-6 pr-1 text-xs font-bold text-zinc-900 shadow-sm outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
+                                  className="w-16 rounded-md border border-zinc-200 bg-white py-1 pl-7 pr-1 text-xs font-bold text-zinc-900 shadow-sm outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                   placeholder="0"
-                                  value={item.discountPercent || ''}
-                                  onChange={(e) => setDiscount(item.cartItemId, parseFloat(e.target.value) || 0)}
+                                  value={item.discountValue || ''}
+                                  onChange={(e) => setDiscount(item.cartItemId, parseFloat(e.target.value) || 0, item.discountType)}
                                   min="0"
-                                  max="100"
                                 />
                              </div>
                           </div>
-
-                          <div className="text-right">
+ 
+                          <div className="text-right flex flex-col items-end">
                              <div className={cn("text-sm font-black", item.isReturn ? "text-red-600" : "text-zinc-900")}>
-                               {item.total.toLocaleString()} IQD
+                               {item.isReturn ? '-' : ''}{Math.abs(item.total).toLocaleString()} IQD
                              </div>
-                             {item.quantity > 1 && (
-                               <div className="text-[10px] font-bold text-zinc-400">{item.quantity} × {item.batch?.price.toLocaleString()}</div>
-                             )}
+                             <button 
+                               onClick={() => toggleCartItem(item.cartItemId)}
+                               className="text-[10px] font-bold text-teal-600 hover:underline flex items-center gap-1 mt-1"
+                             >
+                               {expandedCartItems[item.cartItemId] ? 'Hide Details' : 'Show Details'}
+                             </button>
                           </div>
                         </div>
+                        
+                        {expandedCartItems[item.cartItemId] && (
+                           <div className="mt-1 rounded-lg bg-zinc-50 p-3 text-[11px] space-y-1 animate-in slide-in-from-top-2 duration-200">
+                              <div className="flex justify-between">
+                                 <span className="text-zinc-500 font-semibold uppercase tracking-wider">Unit Price</span>
+                                 <span className="font-bold text-zinc-900">{item.batch?.price.toLocaleString()} IQD</span>
+                              </div>
+                              <div className="flex justify-between">
+                                 <span className="text-zinc-500 font-semibold uppercase tracking-wider">Discount ({item.discountType === 'percent' ? `${item.discountValue}%` : 'Fixed'})</span>
+                                 <span className="font-bold text-red-500">
+                                   -{ (item.discountType === 'percent' ? ((item.batch?.price || 0) * (item.discountValue / 100)) : item.discountValue).toLocaleString() } IQD
+                                 </span>
+                              </div>
+                              <div className="flex justify-between border-t border-zinc-200 pt-1 mt-1">
+                                 <span className="text-zinc-500 font-semibold uppercase tracking-wider">Final Price</span>
+                                 <span className="font-bold text-teal-600">
+                                   {( (item.batch?.price || 0) - (item.discountType === 'percent' ? ((item.batch?.price || 0) * (item.discountValue / 100)) : item.discountValue) ).toLocaleString()} IQD
+                                 </span>
+                              </div>
+                           </div>
+                        )}
                      </div>
                   ))}
                </div>
@@ -370,24 +466,50 @@ export default function POSPage() {
 
           {/* Totals Area */}
           <div className="bg-white p-5 border-t border-zinc-200/80 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)]">
+            
+            {cartData.length > 0 && (
+              <div className="mb-4 rounded-2xl border border-zinc-200 bg-zinc-50/50 p-3 shadow-inner">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Cart Discount</span>
+                  <div className="flex items-center gap-1">
+                    <button 
+                      onClick={() => setCartDiscount(cartDiscountValue, cartDiscountType === 'percent' ? 'amount' : 'percent')}
+                      className="h-6 w-8 rounded-lg bg-zinc-200 text-[8px] font-black hover:bg-zinc-300 transition-colors"
+                    >
+                      {cartDiscountType === 'percent' ? '%' : 'IQD'}
+                    </button>
+                  </div>
+                </div>
+                <div className="relative">
+                  <Tag className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-300" />
+                  <Input 
+                    type="number"
+                    placeholder="Apply global discount..."
+                    value={cartDiscountValue || ''}
+                    onChange={(e) => setCartDiscount(parseFloat(e.target.value) || 0, cartDiscountType)}
+                    className="h-10 border-zinc-200 bg-white pl-10 text-sm font-bold shadow-sm focus:ring-zinc-900"
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="space-y-3 mb-5">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-zinc-500 font-semibold uppercase tracking-widest">{t('subtotal')}</span>
-                <span className={cn("font-bold", subtotal < 0 ? "text-red-600" : "text-zinc-900")}>{subtotal.toLocaleString()} {t('currency')}</span>
+                <span className={cn("font-bold", cartItemsSubtotal < 0 ? "text-red-600" : "text-zinc-900")}>{cartItemsSubtotal.toLocaleString()} {t('currency')}</span>
               </div>
               <div className="flex items-center justify-between text-xs">
                 <span className="text-zinc-500 font-semibold uppercase tracking-widest">{t('discount')}</span>
-                <span className="font-bold text-emerald-600">{totalDiscount.toLocaleString()} {t('currency')}</span>
+                <span className="font-bold text-red-500">-{totalDiscount.toLocaleString()} {t('currency')}</span>
               </div>
               
-              <div className="mt-2 rounded-xl bg-zinc-900 p-4 text-white shadow-xl shadow-zinc-900/20">
-                <div className="flex items-end justify-between">
-                  <span className="text-xs font-semibold text-zinc-400 uppercase tracking-widest">{t('grand_total')}</span>
+              <div className="mt-2 rounded-xl bg-zinc-900 px-4 py-3 text-white shadow-lg shadow-zinc-900/20">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{t('grand_total')}</span>
                   <div className="text-end">
-                    <span className={cn("block text-3xl font-black tracking-tight leading-none mb-1", subtotal < 0 && "text-red-400")}>
-                      {subtotal.toLocaleString()}
+                    <span className={cn("block text-2xl font-black tracking-tight leading-none", subtotal < 0 && "text-red-400")}>
+                      {subtotal.toLocaleString()} <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">{t('currency')}</span>
                     </span>
-                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{t('currency')}</span>
                   </div>
                 </div>
               </div>
@@ -433,6 +555,80 @@ export default function POSPage() {
       {/* Modals */}
       <PaymentModal />
       <ShiftModal />
+
+      {/* Product Details Modal */}
+      {selectedProductDetails && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/60 p-4 backdrop-blur-sm" onClick={() => setSelectedProductDetails(null)}>
+          <div className="w-full max-w-md rounded-3xl bg-white shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+             <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50/50 px-6 py-4">
+                <div className="flex items-center gap-3 text-zinc-900">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-zinc-400 border border-zinc-200/50 shadow-sm">
+                     {selectedProductDetails.category.toLowerCase().includes('syrup') || selectedProductDetails.category.toLowerCase().includes('gastro') || selectedProductDetails.category.toLowerCase().includes('respiratory') ? <FlaskConical className="h-5 w-5" /> : selectedProductDetails.category.toLowerCase().includes('topical') ? <Droplet className="h-5 w-5" /> : <Pill className="h-5 w-5" />}
+                  </div>
+                  <h3 className="font-bold text-lg">Product Details</h3>
+                </div>
+                <button onClick={() => setSelectedProductDetails(null)} className="text-zinc-400 hover:text-zinc-600">
+                  <Trash2 className="h-5 w-5 hidden" /> {/* dummy icon for standardizing x shape if needed */}
+                  <span className="text-xl leading-none">&times;</span>
+                </button>
+             </div>
+             
+             <div className="p-6">
+                <div className="mb-6 border-b border-zinc-100 pb-6">
+                  <h4 className="text-2xl font-black text-zinc-900">{selectedProductDetails.brandName}</h4>
+                  <p className="text-sm font-semibold text-zinc-500 mt-1">{selectedProductDetails.genericName}</p>
+                  <p className="mt-2 inline-flex rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-bold text-zinc-600">{selectedProductDetails.category}</p>
+                </div>
+                
+                <h5 className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-3">Available Batches</h5>
+                <div className="space-y-2 mb-6 max-h-48 overflow-y-auto pr-2">
+                   {selectedProductDetails.batches.map((batch: any) => {
+                     const isSelected = selectedBatchId === batch.id;
+                     const isOutOfStock = batch.quantity <= 0;
+                     return (
+                       <button 
+                         key={batch.id} 
+                         disabled={isOutOfStock}
+                         onClick={() => setSelectedBatchId(batch.id)}
+                         className={cn(
+                           "w-full flex justify-between items-center p-3 rounded-xl border transition-all text-left",
+                           isSelected 
+                             ? "bg-teal-50 border-teal-200 ring-2 ring-teal-500/20 shadow-sm" 
+                             : isOutOfStock 
+                               ? "bg-zinc-50 border-zinc-100 opacity-60 cursor-not-allowed" 
+                               : "bg-white border-zinc-100 hover:border-zinc-300 hover:bg-zinc-50"
+                         )}
+                       >
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <div className={cn("h-2 w-2 rounded-full", isSelected ? "bg-teal-500" : "bg-zinc-300")}></div>
+                              <div className="font-bold text-sm text-zinc-900">Batch {batch.batchNo}</div>
+                            </div>
+                            <div className={cn("text-[10px] font-bold uppercase tracking-wider mt-1 ml-4", isOutOfStock ? "text-red-500" : "text-emerald-500")}>
+                               {isOutOfStock ? 'Out of stock' : `${batch.quantity} in stock`}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-bold text-teal-600">{batch.price.toLocaleString()} IQD</div>
+                            <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mt-1">Exp: {batch.expiryDate}</div>
+                          </div>
+                       </button>
+                     );
+                   })}
+                </div>
+
+                <Button 
+                  className="w-full h-14 bg-zinc-900 shadow-lg font-bold text-base hover:bg-zinc-800 transition-all active:scale-[0.98]"
+                  disabled={!selectedBatchId}
+                  onClick={() => selectedBatchId && handleAddToCart(selectedProductDetails, selectedBatchId)}
+                >
+                  <Plus className="mr-2 h-5 w-5" />
+                  Add to Cart
+                </Button>
+             </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

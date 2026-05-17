@@ -2,12 +2,14 @@
 
 import { useStore } from '@/lib/store';
 import { Button, Input } from '@/components/ui';
-import { Wallet, X, Calculator } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Wallet, X, Calculator, Plus, Minus } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export function ShiftModal() {
   const { isShiftOpen, setIsShiftOpen, shiftCash, setShiftCash, isShiftModalOpen, setIsShiftModalOpen, transactions } = useStore();
   const [amount, setAmount] = useState('');
+  const [currency, setCurrency] = useState('IQD');
 
   if (!isShiftModalOpen) return null;
 
@@ -40,6 +42,23 @@ export function ShiftModal() {
     setIsShiftModalOpen(false);
   };
 
+  const handleIncrement = (direction: 1 | -1) => {
+    const step = currency === 'IQD' ? 250 : 1;
+    const current = parseInt(amount || '0', 10);
+    const next = current + (step * direction);
+    if (next >= 0) setAmount(next.toString());
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      handleIncrement(1);
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      handleIncrement(-1);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/60 backdrop-blur-xl p-4">
       <div className="w-full max-w-md rounded-[2rem] bg-white p-8 shadow-2xl animate-in zoom-in-95 duration-200">
@@ -60,18 +79,58 @@ export function ShiftModal() {
 
         {!isShiftOpen ? (
           <form onSubmit={handleOpenShift} className="space-y-6">
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="mb-3 block text-xs font-bold uppercase tracking-widest text-zinc-500">Currency</label>
+                <div className="flex rounded-xl bg-zinc-100 p-1 shadow-inner border border-zinc-200/50">
+                  <button 
+                    type="button"
+                    onClick={() => setCurrency('IQD')}
+                    className={cn("flex-1 py-3 text-sm font-black rounded-lg transition-all", currency === 'IQD' ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-400 hover:text-zinc-600")}
+                  >
+                    IQD
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => setCurrency('USD')}
+                    className={cn("flex-1 py-3 text-sm font-black rounded-lg transition-all", currency === 'USD' ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-400 hover:text-zinc-600")}
+                  >
+                    USD
+                  </button>
+                </div>
+              </div>
+            </div>
             <div>
               <label className="mb-3 block text-xs font-bold uppercase tracking-widest text-zinc-500">Starting Cash in Drawer</label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-zinc-400">IQD</span>
-                <Input 
-                  type="number"
-                  placeholder="0"
-                  className="h-16 rounded-2xl border-none bg-zinc-50 text-center text-3xl font-black shadow-inner ring-1 ring-zinc-200 focus-visible:ring-2 focus-visible:ring-teal-600"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  autoFocus
-                />
+              <div className="flex items-center gap-3">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="h-16 w-16 shrink-0 rounded-2xl bg-zinc-50 border-zinc-200 text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 flex items-center justify-center"
+                  onClick={() => handleIncrement(-1)}
+                >
+                  <Minus className="h-6 w-6 stroke-[3]" />
+                </Button>
+                <div className="relative flex-1">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-zinc-400">{currency}</span>
+                  <Input 
+                    type="number"
+                    placeholder="0"
+                    className="h-16 w-full rounded-2xl border-none bg-white pl-16 pr-6 text-xl font-black text-zinc-900 shadow-inner ring-1 ring-zinc-200 focus-visible:ring-2 focus-visible:ring-teal-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    autoFocus
+                  />
+                </div>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="h-16 w-16 shrink-0 rounded-2xl bg-zinc-50 border-zinc-200 text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 flex items-center justify-center"
+                  onClick={() => handleIncrement(1)}
+                >
+                  <Plus className="h-6 w-6 stroke-[3]" />
+                </Button>
               </div>
             </div>
             <Button type="submit" className="h-14 w-full rounded-xl bg-teal-600 text-lg font-bold text-white shadow-xl shadow-teal-600/20 active:scale-[0.98] hover:bg-teal-700">
@@ -103,7 +162,7 @@ export function ShiftModal() {
                 <Input 
                   type="number"
                   placeholder="0"
-                  className="h-16 rounded-2xl border-none bg-white text-center text-3xl font-black shadow-sm ring-1 ring-zinc-200 focus-visible:ring-2 focus-visible:ring-amber-500"
+                  className="h-16 w-full rounded-2xl border-none bg-white text-xl font-black text-zinc-900 shadow-sm ring-1 ring-zinc-200 focus-visible:ring-2 focus-visible:ring-amber-500 pl-16 pr-6"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   autoFocus

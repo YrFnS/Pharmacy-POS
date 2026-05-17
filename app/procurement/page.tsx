@@ -163,19 +163,20 @@ export default function ProcurementPage() {
           </div>
 
           {/* Received Items */}
-          <div className="rounded-2xl border border-zinc-200/50 bg-white shadow-sm overflow-hidden">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-zinc-100 bg-zinc-50/50">
-                <tr>
-                  <th className="px-6 py-4 font-bold text-zinc-500 uppercase tracking-widest text-[10px]">Product Info</th>
-                  <th className="px-4 py-4 font-bold text-zinc-500 uppercase tracking-widest text-[10px]">Batch No</th>
-                  <th className="px-4 py-4 font-bold text-zinc-500 uppercase tracking-widest text-[10px]">Expiry</th>
-                  <th className="px-4 py-4 font-bold text-zinc-500 uppercase tracking-widest text-[10px] w-24">Qty</th>
-                  <th className="px-4 py-4 font-bold text-zinc-500 uppercase tracking-widest text-[10px] w-32">Cost Price</th>
-                  <th className="px-4 py-4 font-bold text-zinc-500 uppercase tracking-widest text-[10px] text-right">Total</th>
-                  <th className="px-4 py-4 w-12"></th>
-                </tr>
-              </thead>
+          <div className="rounded-2xl border border-zinc-200/50 bg-white shadow-sm overflow-hidden flex flex-col max-h-[500px]">
+            <div className="overflow-auto relative flex-1">
+              <table className="w-full text-left text-sm relative">
+                <thead className="border-b border-zinc-100 bg-zinc-50/90 backdrop-blur sticky top-0 z-10 shadow-sm">
+                  <tr>
+                    <th className="px-6 py-4 font-bold text-zinc-500 uppercase tracking-widest text-[10px]">Product Info</th>
+                    <th className="px-4 py-4 font-bold text-zinc-500 uppercase tracking-widest text-[10px]">Batch No</th>
+                    <th className="px-4 py-4 font-bold text-zinc-500 uppercase tracking-widest text-[10px]">Expiry</th>
+                    <th className="px-4 py-4 font-bold text-zinc-500 uppercase tracking-widest text-[10px] w-24">Qty</th>
+                    <th className="px-4 py-4 font-bold text-zinc-500 uppercase tracking-widest text-[10px] w-32">Cost Price</th>
+                    <th className="px-4 py-4 font-bold text-zinc-500 uppercase tracking-widest text-[10px] text-right">Total</th>
+                    <th className="px-4 py-4 w-12"></th>
+                  </tr>
+                </thead>
               <tbody className="divide-y divide-zinc-100">
                 {receivedItems.length === 0 ? (
                   <tr>
@@ -242,7 +243,8 @@ export default function ProcurementPage() {
                 )}
               </tbody>
             </table>
-            {receivedItems.length > 0 && (
+          </div>
+          {receivedItems.length > 0 && (
               <div className="border-t border-zinc-100 bg-zinc-50/50 p-6 flex justify-end">
                  <div className="text-right">
                     <p className="text-xs font-bold uppercase tracking-widest text-zinc-400">Total Purchase Value</p>

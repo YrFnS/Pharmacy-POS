@@ -7,7 +7,7 @@ import { X, CheckCircle2, CircleDollarSign } from 'lucide-react';
 import { useState } from 'react';
 
 export function PaymentModal() {
-  const { isPaymentModalOpen, setPaymentModalOpen, cart, completeSale, products } = useStore();
+  const { isPaymentModalOpen, setPaymentModalOpen, cart, completeSale, products, cartDiscountType, cartDiscountValue } = useStore();
   const { t, isRtl, language } = useTranslation();
   
   const [amountGiven, setAmountGiven] = useState<string>('');
@@ -16,14 +16,30 @@ export function PaymentModal() {
 
   if (!isPaymentModalOpen) return null;
 
-  const total = cart.reduce((sum, item) => {
+  const subtotalItems = cart.reduce((sum, item) => {
     const p = products.find(prod => prod.id === item.productId);
     const b = p?.batches.find(batch => batch.id === item.batchId);
     const price = b?.price || 0;
-    const discount = price * (item.discountPercent / 100);
-    const finalPrice = price - discount;
+    
+    let discountAmount = 0;
+    if (item.discountType === 'percent') {
+      discountAmount = price * (item.discountValue / 100);
+    } else {
+      discountAmount = item.discountValue;
+    }
+    
+    const finalPrice = price - discountAmount;
     return sum + (finalPrice * item.quantity * (item.isReturn ? -1 : 1));
   }, 0);
+
+  let total = subtotalItems;
+  if (cartDiscountValue > 0) {
+    if (cartDiscountType === 'percent') {
+      total = subtotalItems * (1 - cartDiscountValue / 100);
+    } else {
+      total = subtotalItems - cartDiscountValue;
+    }
+  }
 
   const absTotal = Math.abs(total);
   const amount = Number(amountGiven) || 0;
