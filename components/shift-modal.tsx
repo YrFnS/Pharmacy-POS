@@ -4,12 +4,23 @@ import { useStore } from '@/lib/store';
 import { Button, Input } from '@/components/ui';
 import { Wallet, X, Calculator } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { cn } from '@/lib/utils';
 
 export function ShiftModal() {
-  const { isShiftOpen, setIsShiftOpen, shiftCash, setShiftCash, isShiftModalOpen, setIsShiftModalOpen } = useStore();
+  const { isShiftOpen, setIsShiftOpen, shiftCash, setShiftCash, isShiftModalOpen, setIsShiftModalOpen, transactions } = useStore();
   const [amount, setAmount] = useState('');
 
   if (!isShiftModalOpen) return null;
+
+  // Calculate cash sales in current shift (simulated by looking at transactions from today or since a specific timestamp)
+  // For now, let's just sum all cash transactions in the store state.
+  const cashSales = transactions
+    .filter(t => t.paymentMethod === 'cash')
+    .reduce((sum, t) => sum + t.total, 0);
+
+  const expectedInDrawer = shiftCash + cashSales;
+  const actualAmount = Number(amount) || 0;
+  const difference = actualAmount - expectedInDrawer;
 
   const handleOpenShift = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,8 +52,8 @@ export function ShiftModal() {
                 {isShiftOpen ? <Calculator className="h-6 w-6" /> : <Wallet className="h-6 w-6" />}
              </div>
              <div>
-               <h2 className="text-xl font-black tracking-tight text-zinc-900">{isShiftOpen ? 'Close Shift' : 'Open Shift'}</h2>
-               <p className="text-xs font-bold uppercase tracking-widest text-zinc-400">{isShiftOpen ? 'End of day Z-Report' : 'Start your day'}</p>
+                <h2 className="text-xl font-black tracking-tight text-zinc-900">{isShiftOpen ? 'Close Shift' : 'Open Shift'}</h2>
+                <p className="text-xs font-bold uppercase tracking-widest text-zinc-400">{isShiftOpen ? 'End of day Z-Report' : 'Start your day'}</p>
              </div>
            </div>
            <button onClick={handleCloseModal} className="rounded-full p-2 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900">
@@ -79,13 +90,24 @@ export function ShiftModal() {
                  </div>
                  <div className="flex justify-between items-center text-sm">
                     <span className="font-bold text-zinc-500">Cash Sales</span>
-                    <span className="font-black text-emerald-600">+ 0 IQD</span>
+                    <span className="font-black text-emerald-600">+ {cashSales.toLocaleString()} IQD</span>
                  </div>
                  <div className="h-px w-full bg-zinc-200"></div>
                  <div className="flex justify-between items-center">
                     <span className="font-bold text-zinc-500">Expected in Drawer</span>
-                    <span className="font-black text-zinc-900 text-xl">{shiftCash.toLocaleString()} IQD</span>
+                    <span className="font-black text-zinc-900 text-xl">{expectedInDrawer.toLocaleString()} IQD</span>
                  </div>
+                 {amount && (
+                    <div className="flex justify-between items-center pt-2 border-t border-dashed border-zinc-200">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Difference</span>
+                      <span className={cn(
+                        "font-black text-sm",
+                        difference === 0 ? "text-emerald-500" : difference > 0 ? "text-blue-500" : "text-red-500"
+                      )}>
+                        {difference > 0 ? '+' : ''}{difference.toLocaleString()} IQD
+                      </span>
+                    </div>
+                 )}
              </div>
              
              <div>

@@ -5,10 +5,9 @@ import { useTranslation } from '@/hooks/use-translation';
 import { Button, Input } from '@/components/ui';
 import { X, CheckCircle2, CircleDollarSign } from 'lucide-react';
 import { useState } from 'react';
-import { mockProducts } from '@/lib/mock';
 
 export function PaymentModal() {
-  const { isPaymentModalOpen, setPaymentModalOpen, cart, clearCart } = useStore();
+  const { isPaymentModalOpen, setPaymentModalOpen, cart, completeSale, products } = useStore();
   const { t, isRtl, language } = useTranslation();
   
   const [amountGiven, setAmountGiven] = useState<string>('');
@@ -18,28 +17,31 @@ export function PaymentModal() {
   if (!isPaymentModalOpen) return null;
 
   const total = cart.reduce((sum, item) => {
-    const p = mockProducts.find(prod => prod.id === item.productId);
+    const p = products.find(prod => prod.id === item.productId);
     const b = p?.batches.find(batch => batch.id === item.batchId);
-    return sum + ((b?.price || 0) * item.quantity);
+    const price = b?.price || 0;
+    const discount = price * (item.discountPercent / 100);
+    const finalPrice = price - discount;
+    return sum + (finalPrice * item.quantity * (item.isReturn ? -1 : 1));
   }, 0);
 
+  const absTotal = Math.abs(total);
   const amount = Number(amountGiven) || 0;
-  const change = amount - total;
-  const isValid = amount >= total;
+  const change = amount - absTotal;
+  const isValid = total <= 0 ? true : amount >= total;
 
   const quickAmounts = [
-    total, // Exact amount
-    Math.ceil(total / 5000) * 5000,
-    Math.ceil(total / 10000) * 10000,
-    Math.ceil(total / 25000) * 25000,
-  ].filter((v, i, a) => a.indexOf(v) === i && v >= total); // unique and >= total
+    absTotal, // Exact amount
+    Math.ceil(absTotal / 5000) * 5000,
+    Math.ceil(absTotal / 10000) * 10000,
+    Math.ceil(absTotal / 25000) * 25000,
+  ].filter((v, i, a) => a.indexOf(v) === i && v >= absTotal).sort((a,b) => a-b);
 
   const handleComplete = () => {
     setSuccess(true);
     setTimeout(() => {
       setSuccess(false);
-      clearCart();
-      setPaymentModalOpen(false);
+      completeSale(paymentMethod);
       setAmountGiven('');
     }, 1500);
   };

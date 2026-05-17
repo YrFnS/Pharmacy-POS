@@ -3,9 +3,9 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
 import { useStore } from '@/lib/store';
-import { mockProducts, mockCustomers } from '@/lib/mock';
 import { Button, Input } from '@/components/ui';
 import { PaymentModal } from '@/components/payment-modal';
+import { ShiftModal } from '@/components/shift-modal';
 import { Search, Trash2, Plus, Minus, CreditCard, Globe, ScrollText, User as UserIcon, Tag, Pill, PauseCircle, PlayCircle, Percent } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -28,7 +28,10 @@ export default function POSPage() {
     isShiftOpen,
     setIsShiftModalOpen,
     isReturnMode,
-    setIsReturnMode
+    setIsReturnMode,
+    products,
+    customers,
+    settings
   } = useStore();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -42,22 +45,22 @@ export default function POSPage() {
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return [];
     const query = searchQuery.toLowerCase();
-    return mockProducts.filter(p => 
+    return products.filter(p => 
       p.brandName.toLowerCase().includes(query) || 
       p.genericName.toLowerCase().includes(query) ||
       p.barcode.includes(query)
     ).slice(0, 8); // nice limit
-  }, [searchQuery]);
+  }, [searchQuery, products]);
 
-  const handleProductSelect = (product: typeof mockProducts[0]) => {
+  const handleProductSelect = (product: any) => {
     const batch = product.batches[0];
-    if (batch.quantity <= 0 && !isReturnMode) return;
+    if (!batch || (batch.quantity <= 0 && !isReturnMode)) return;
     addToCart(product.id, batch.id);
     setSearchQuery('');
   };
 
   const cartData = cart.map(item => {
-    const product = mockProducts.find(p => p.id === item.productId);
+    const product = products.find(p => p.id === item.productId);
     const batch = product?.batches.find(b => b.id === item.batchId);
     const price = batch?.price || 0;
     const discountAmount = price * (item.discountPercent / 100);
@@ -73,7 +76,7 @@ export default function POSPage() {
   const subtotal = cartData.reduce((sum, item) => sum + item.total, 0);
   
   const getSubstitutes = (genericName: string, excludeId: string) => {
-    return mockProducts.filter(p => p.genericName === genericName && p.id !== excludeId && p.batches.some(b => b.quantity > 0));
+    return products.filter(p => p.genericName === genericName && p.id !== excludeId && p.batches.some(b => b.quantity > 0));
   };
 
   return (
@@ -84,7 +87,7 @@ export default function POSPage() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900 text-white shadow-sm shadow-zinc-900/10">
             <Pill className="h-4 w-4" />
           </div>
-          <h1 className="text-xl font-bold tracking-tight">{t('app_title')}</h1>
+          <h1 className="text-xl font-bold tracking-tight">{settings.pharmacyName}</h1>
         </div>
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2 rounded-xl bg-zinc-100 p-1 pl-4">
@@ -174,7 +177,7 @@ export default function POSPage() {
                           </div>
                         )}
                         <div className="text-end">
-                          <div className={cn("font-bold", !outOfStock ? "text-teal-600" : "text-zinc-400")}>{p.batches[0].price.toLocaleString()} {t('currency')}</div>
+                          <div className={cn("font-bold", !outOfStock ? "text-teal-600" : "text-zinc-400")}>{p.batches[0].price.toLocaleString()} {settings.currency}</div>
                           <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Exp: {p.batches[0].expiryDate}</div>
                         </div>
                       </div>
@@ -193,7 +196,7 @@ export default function POSPage() {
                                <div className="text-[10px] font-semibold text-zinc-500">{sub.batches[0].quantity} in stock</div>
                              </div>
                              <div className="text-right">
-                               <div className="font-bold text-teal-600 text-sm">{sub.batches[0].price.toLocaleString()} {t('currency')}</div>
+                               <div className="font-bold text-teal-600 text-sm">{sub.batches[0].price.toLocaleString()} {settings.currency}</div>
                              </div>
                            </button>
                         ))}
@@ -210,8 +213,8 @@ export default function POSPage() {
           <div className="flex-1 overflow-y-auto p-6">
             <h3 className="mb-4 text-sm font-bold uppercase tracking-widest text-zinc-400">Products Catalog</h3>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-              {mockProducts.map(p => {
-                 const outOfStock = p.batches[0].quantity <= 0;
+              {products.map(p => {
+                 const outOfStock = !p.batches[0] || p.batches[0].quantity <= 0;
                  const disabled = outOfStock && !isReturnMode;
                  return (
                  <button 
@@ -238,7 +241,7 @@ export default function POSPage() {
                     
                     <div className="mt-4 flex w-full items-end justify-between">
                       <div className={cn("text-sm font-black focus:outline-none", outOfStock ? "text-zinc-400" : "text-teal-600")}>
-                        {p.batches[0].price.toLocaleString()} <span className="text-[10px]">IQD</span>
+                        {p.batches[0].price.toLocaleString()} <span className="text-[10px]">{settings.currency}</span>
                       </div>
                       <div className="flex h-6 w-6 items-center justify-center rounded-md bg-zinc-100 text-zinc-400">
                         <Plus className="h-3 w-3" />
@@ -263,7 +266,7 @@ export default function POSPage() {
                 value={customerId}
                 onChange={(e) => setCustomer(e.target.value)}
               >
-                {mockCustomers.map(c => (
+                {customers.map(c => (
                   <option key={c.id} value={c.id}>{c.name} {c.debt > 0 ? `• Debt: ${c.debt.toLocaleString()}` : ''}</option>
                 ))}
               </select>
@@ -352,7 +355,7 @@ export default function POSPage() {
 
                           <div className="text-right">
                              <div className={cn("text-sm font-black", item.isReturn ? "text-red-600" : "text-zinc-900")}>
-                               {item.total.toLocaleString()} IQD
+                               {item.total.toLocaleString()} {settings.currency}
                              </div>
                              {item.quantity > 1 && (
                                <div className="text-[10px] font-bold text-zinc-400">{item.quantity} × {item.batch?.price.toLocaleString()}</div>
@@ -370,11 +373,11 @@ export default function POSPage() {
             <div className="space-y-3 mb-5">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-zinc-500 font-semibold uppercase tracking-widest">{t('subtotal')}</span>
-                <span className={cn("font-bold", subtotal < 0 ? "text-red-600" : "text-zinc-900")}>{subtotal.toLocaleString()} {t('currency')}</span>
+                <span className={cn("font-bold", subtotal < 0 ? "text-red-600" : "text-zinc-900")}>{subtotal.toLocaleString()} {settings.currency}</span>
               </div>
               <div className="flex items-center justify-between text-xs">
                 <span className="text-zinc-500 font-semibold uppercase tracking-widest">{t('discount')}</span>
-                <span className="font-bold text-emerald-600">0 {t('currency')}</span>
+                <span className="font-bold text-emerald-600">0 {settings.currency}</span>
               </div>
               
               <div className="mt-2 rounded-xl bg-zinc-900 p-4 text-white shadow-xl shadow-zinc-900/20">
@@ -384,7 +387,7 @@ export default function POSPage() {
                     <span className={cn("block text-3xl font-black tracking-tight leading-none mb-1", subtotal < 0 && "text-red-400")}>
                       {subtotal.toLocaleString()}
                     </span>
-                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{t('currency')}</span>
+                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{settings.currency}</span>
                   </div>
                 </div>
               </div>
@@ -429,6 +432,7 @@ export default function POSPage() {
       
       {/* Modals */}
       <PaymentModal />
+      <ShiftModal />
     </div>
   );
 }

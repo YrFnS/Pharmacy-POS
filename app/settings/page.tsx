@@ -1,10 +1,31 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button, Input } from '@/components/ui';
-import { Save, Store, Users, Receipt, Link as LinkIcon } from 'lucide-react';
+import { Save, Store, Users, Receipt, Trash2, X, CheckCircle2 } from 'lucide-react';
+import { useStore } from '@/lib/store';
+import { cn } from '@/lib/utils';
 
 export default function SettingsPage() {
+  const { settings, updateSettings, users, addUser, deleteUser } = useStore();
+  const [formSettings, setFormSettings] = useState(settings);
+  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+  const [newUser, setNewUser] = useState({ name: '', email: '', role: 'Cashier' as const, permissions: 'Basic POS, No Delete' });
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const handleSaveSettings = () => {
+    updateSettings(formSettings);
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 2000);
+  };
+
+  const handleAddUser = () => {
+    if (!newUser.name || !newUser.email) return;
+    addUser(newUser);
+    setIsAddUserModalOpen(false);
+    setNewUser({ name: '', email: '', role: 'Cashier', permissions: 'Basic POS, No Delete' });
+  };
+
   return (
     <div className="flex h-full flex-col bg-[#F9FAFB]">
       <header className="flex h-16 shrink-0 items-center justify-between border-b border-zinc-200/50 bg-white/80 px-8 backdrop-blur-xl">
@@ -12,8 +33,14 @@ export default function SettingsPage() {
           <h1 className="text-xl font-bold tracking-tight text-zinc-900">Settings</h1>
           <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400">Configuration & Admin</p>
         </div>
-        <div className="flex gap-3">
-           <Button className="gap-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 font-bold text-white shadow-xl shadow-zinc-900/10">
+        <div className="flex items-center gap-3">
+           {showSuccess && (
+             <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm animate-in fade-in slide-in-from-right-4">
+                <CheckCircle2 className="h-4 w-4" />
+                Changes Saved
+             </div>
+           )}
+           <Button className="gap-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 font-bold text-white shadow-xl shadow-zinc-900/10" onClick={handleSaveSettings}>
              <Save className="h-4 w-4" />
              Save All Changes
            </Button>
@@ -38,18 +65,30 @@ export default function SettingsPage() {
               <div className="grid grid-cols-2 gap-8">
                  <div>
                    <label className="mb-3 block text-xs font-bold uppercase tracking-widest text-zinc-400">Pharmacy Name</label>
-                   <Input defaultValue="Al-Shifa Pharmacy" className="h-12 rounded-xl border-zinc-200 bg-zinc-50/50 font-bold" />
+                   <Input 
+                     value={formSettings.pharmacyName} 
+                     onChange={e => setFormSettings({...formSettings, pharmacyName: e.target.value})}
+                     className="h-12 rounded-xl border-zinc-200 bg-zinc-50/50 font-bold" 
+                   />
                  </div>
                  <div>
                    <label className="mb-3 block text-xs font-bold uppercase tracking-widest text-zinc-400">Currency</label>
-                   <select className="h-12 w-full appearance-none rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 font-bold text-zinc-900 outline-none transition-all focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900">
+                   <select 
+                     value={formSettings.currency}
+                     onChange={e => setFormSettings({...formSettings, currency: e.target.value})}
+                     className="h-12 w-full appearance-none rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 font-bold text-zinc-900 outline-none transition-all focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
+                   >
                      <option value="IQD">Iraqi Dinar (IQD)</option>
                      <option value="USD">US Dollar (USD)</option>
                    </select>
                  </div>
                  <div className="col-span-2">
                    <label className="mb-3 block text-xs font-bold uppercase tracking-widest text-zinc-400">Address</label>
-                   <Input defaultValue="Baghdad, Mansour Dist, 14th St" className="h-12 rounded-xl border-zinc-200 bg-zinc-50/50 font-bold" />
+                   <Input 
+                     value={formSettings.address} 
+                     onChange={e => setFormSettings({...formSettings, address: e.target.value})}
+                     className="h-12 rounded-xl border-zinc-200 bg-zinc-50/50 font-bold" 
+                   />
                  </div>
               </div>
             </div>
@@ -72,7 +111,8 @@ export default function SettingsPage() {
                    <label className="mb-3 block text-xs font-bold uppercase tracking-widest text-zinc-400">Footer Message</label>
                    <textarea 
                      className="h-24 w-full resize-none rounded-xl border border-zinc-200 bg-zinc-50/50 p-4 font-medium text-zinc-900 outline-none transition-all placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
-                     defaultValue="Thank you for your visit. No refunds on open medicine."
+                     value={formSettings.receiptFooter}
+                     onChange={e => setFormSettings({...formSettings, receiptFooter: e.target.value})}
                    />
                  </div>
                  <div className="flex items-center justify-between">
@@ -81,7 +121,12 @@ export default function SettingsPage() {
                      <p className="text-sm font-semibold text-zinc-500">Automatically trigger thermal printer on checkout.</p>
                    </div>
                    <label className="relative inline-flex cursor-pointer items-center">
-                     <input type="checkbox" className="peer sr-only" defaultChecked />
+                     <input 
+                        type="checkbox" 
+                        className="peer sr-only" 
+                        checked={formSettings.autoPrintReceipt}
+                        onChange={e => setFormSettings({...formSettings, autoPrintReceipt: e.target.checked})}
+                     />
                      <div className="peer h-7 w-14 rounded-full bg-zinc-200 after:absolute after:start-[4px] after:top-[4px] after:h-5 after:w-5 after:rounded-full after:border after:border-zinc-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-zinc-900 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-zinc-900 peer-focus:ring-offset-2"></div>
                    </label>
                  </div>
@@ -101,7 +146,7 @@ export default function SettingsPage() {
                   <p className="text-xs font-semibold text-zinc-500">Manage cashiers and roles.</p>
                 </div>
               </div>
-              <Button variant="outline" className="mt-4 font-bold md:mt-0">Add New User</Button>
+              <Button variant="outline" className="mt-4 font-bold md:mt-0" onClick={() => setIsAddUserModalOpen(true)}>Add New User</Button>
             </div>
             
             <div className="rounded-3xl border border-zinc-200/50 bg-white shadow-sm overflow-hidden">
@@ -115,32 +160,28 @@ export default function SettingsPage() {
                      </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-100">
-                     <tr className="hover:bg-zinc-50/50 transition-colors">
-                        <td className="px-6 py-4">
-                           <p className="font-bold text-zinc-900">Dr. Ahmed</p>
-                           <p className="text-xs font-semibold text-zinc-500">ahmed@alshifa.com</p>
-                        </td>
-                        <td className="px-6 py-4">
-                           <span className="inline-flex rounded-md bg-zinc-900 px-2 py-1 text-xs font-bold text-white">Manager</span>
-                        </td>
-                        <td className="px-6 py-4 text-xs font-bold text-zinc-500">All permissions</td>
-                        <td className="px-6 py-4 text-right">
-                           <Button variant="ghost" size="sm" className="font-bold underline">Edit</Button>
-                        </td>
-                     </tr>
-                     <tr className="hover:bg-zinc-50/50 transition-colors">
-                        <td className="px-6 py-4">
-                           <p className="font-bold text-zinc-900">Ali Cashier</p>
-                           <p className="text-xs font-semibold text-zinc-500">ali@alshifa.com</p>
-                        </td>
-                        <td className="px-6 py-4">
-                           <span className="inline-flex rounded-md bg-zinc-100 px-2 py-1 text-xs font-bold text-zinc-600">Cashier</span>
-                        </td>
-                        <td className="px-6 py-4 text-xs font-semibold text-zinc-500">Basic POS, No Delete</td>
-                        <td className="px-6 py-4 text-right">
-                           <Button variant="ghost" size="sm" className="font-bold underline">Edit</Button>
-                        </td>
-                     </tr>
+                     {users.map(user => (
+                       <tr key={user.id} className="hover:bg-zinc-50/50 transition-colors">
+                          <td className="px-6 py-4">
+                             <p className="font-bold text-zinc-900">{user.name}</p>
+                             <p className="text-xs font-semibold text-zinc-500">{user.email}</p>
+                          </td>
+                          <td className="px-6 py-4">
+                             <span className={cn(
+                               "inline-flex rounded-md px-2 py-1 text-xs font-bold",
+                               user.role === 'Manager' ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-600"
+                             )}>
+                               {user.role}
+                             </span>
+                          </td>
+                          <td className="px-6 py-4 text-xs font-bold text-zinc-500">{user.permissions}</td>
+                          <td className="px-6 py-4 text-right">
+                             <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => deleteUser(user.id)}>
+                               <Trash2 className="h-4 w-4" />
+                             </Button>
+                          </td>
+                       </tr>
+                     ))}
                   </tbody>
                </table>
             </div>
@@ -148,6 +189,50 @@ export default function SettingsPage() {
 
         </div>
       </main>
+
+      {isAddUserModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/60 p-4 backdrop-blur-xl">
+          <div className="w-full max-w-md rounded-3xl bg-white shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+             <div className="flex items-center justify-between border-b border-zinc-100 px-6 py-4">
+                <h3 className="font-bold text-zinc-900">Add New User</h3>
+                <button onClick={() => setIsAddUserModalOpen(false)} className="text-zinc-400 hover:text-zinc-600">
+                  <X className="h-5 w-5" />
+                </button>
+             </div>
+             <div className="p-6 space-y-4">
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2 block">Full Name</label>
+                  <Input 
+                     placeholder="e.g. Ali Mohammed"
+                     value={newUser.name}
+                     onChange={e => setNewUser({...newUser, name: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2 block">Email Address</label>
+                  <Input 
+                     type="email"
+                     placeholder="ali@alshifa.com"
+                     value={newUser.email}
+                     onChange={e => setNewUser({...newUser, email: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2 block">Role</label>
+                  <select 
+                    className="h-10 w-full rounded-lg border border-zinc-200 px-3 text-sm font-bold text-zinc-900 outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
+                    value={newUser.role}
+                    onChange={e => setNewUser({...newUser, role: e.target.value as any})}
+                  >
+                    <option value="Cashier">Cashier</option>
+                    <option value="Manager">Manager</option>
+                  </select>
+                </div>
+                <Button className="w-full h-12 bg-zinc-900 font-bold" onClick={handleAddUser}>Create User</Button>
+             </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

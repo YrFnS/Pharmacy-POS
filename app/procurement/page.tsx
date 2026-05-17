@@ -1,15 +1,16 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { useStore } from '@/lib/store';
 import { Button, Input } from '@/components/ui';
-import { Truck, Plus, Trash2, Search, Save, PackagePlus } from 'lucide-react';
-import { mockProducts } from '@/lib/mock';
-import { cn } from '@/lib/utils';
+import { Truck, Plus, Trash2, Search, Save, PackagePlus, CheckCircle2 } from 'lucide-react';
 
 export default function ProcurementPage() {
+  const { products, receiveStock } = useStore();
   const [supplier, setSupplier] = useState('');
   const [invoiceNo, setInvoiceNo] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [success, setSuccess] = useState(false);
   
   // receiving items list
   const [receivedItems, setReceivedItems] = useState<any[]>([]);
@@ -18,14 +19,35 @@ export default function ProcurementPage() {
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return [];
     const query = searchQuery.toLowerCase();
-    return mockProducts.filter(p => 
+    return products.filter(p => 
       p.brandName.toLowerCase().includes(query) || 
       p.genericName.toLowerCase().includes(query) ||
       p.barcode.includes(query)
     ).slice(0, 5);
-  }, [searchQuery]);
+  }, [searchQuery, products]);
 
-  const handleCreateDraftItem = (product: typeof mockProducts[0]) => {
+  const handleCompleteReception = () => {
+    if (receivedItems.length === 0) return;
+    
+    receivedItems.forEach(item => {
+      receiveStock(item.product.id, {
+        batchNo: item.batchNo,
+        expiryDate: item.expiryDate,
+        quantity: item.quantity,
+        price: item.costPrice * 1.3, // Simple markup for simulation
+      });
+    });
+
+    setSuccess(true);
+    setTimeout(() => {
+      setSuccess(false);
+      setReceivedItems([]);
+      setSupplier('');
+      setInvoiceNo('');
+    }, 2000);
+  };
+
+  const handleCreateDraftItem = (product: any) => {
     setReceivedItems(prev => [
       ...prev,
       {
@@ -60,7 +82,11 @@ export default function ProcurementPage() {
           <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400">Procurement & Incoming</p>
         </div>
         <div className="flex gap-3">
-           <Button className="gap-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white shadow-md shadow-teal-600/20" disabled={receivedItems.length === 0}>
+           <Button 
+             className="gap-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white shadow-md shadow-teal-600/20" 
+             disabled={receivedItems.length === 0}
+             onClick={handleCompleteReception}
+           >
              <Save className="h-4 w-4" />
              Complete Reception
            </Button>
@@ -68,7 +94,14 @@ export default function ProcurementPage() {
       </header>
 
       <main className="flex-1 overflow-auto p-8">
-        <div className="mx-auto max-w-5xl space-y-8">
+        {success ? (
+          <div className="flex h-full flex-col items-center justify-center space-y-4 animate-in fade-in zoom-in duration-300">
+            <CheckCircle2 className="h-20 w-20 text-teal-600" />
+            <h2 className="text-2xl font-black text-zinc-900">Stock Received Successfully</h2>
+            <p className="text-zinc-500 font-medium">Inventory has been updated.</p>
+          </div>
+        ) : (
+          <div className="mx-auto max-w-5xl space-y-8">
           
           {/* Top Form: Metadata */}
           <div className="rounded-2xl border border-zinc-200/50 bg-white p-6 shadow-sm">
@@ -220,6 +253,7 @@ export default function ProcurementPage() {
           </div>
 
         </div>
+        )}
       </main>
     </div>
   );

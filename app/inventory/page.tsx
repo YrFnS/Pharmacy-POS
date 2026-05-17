@@ -1,24 +1,40 @@
 'use client';
 
 import React, { useState } from 'react';
-import { mockProducts } from '@/lib/mock';
+import { useStore } from '@/lib/store';
 import { Input, Button } from '@/components/ui';
-import { Search, Plus, Filter, Package, AlertTriangle, ArrowDownToLine, MoreVertical, X, CheckCircle2 } from 'lucide-react';
+import { Search, Plus, Filter, Package, AlertTriangle, ArrowDownToLine, MoreVertical, X, CheckCircle2, Trash2, Edit2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function InventoryPage() {
+  const { products, addProduct, updateProduct, deleteProduct } = useStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  // Form state
+  const [newProduct, setNewProduct] = useState({
+    barcode: '',
+    brandName: '',
+    genericName: '',
+    category: 'Pain Relief',
+  });
 
   const toggleRow = (id: string) => {
     setExpandedRows(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const filteredProducts = mockProducts.filter(p => 
+  const filteredProducts = products.filter(p => 
     p.brandName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.barcode.includes(searchQuery)
   );
+
+  const handleAddProduct = () => {
+    if (!newProduct.brandName || !newProduct.barcode) return;
+    addProduct(newProduct);
+    setIsAddModalOpen(false);
+    setNewProduct({ barcode: '', brandName: '', genericName: '', category: 'Pain Relief' });
+  };
 
   return (
     <div className="flex h-full flex-col bg-[#F9FAFB]">
@@ -53,7 +69,7 @@ export default function InventoryPage() {
                  </div>
                  <div>
                    <p className="text-sm font-bold text-zinc-500">Total Products</p>
-                   <p className="text-2xl font-black">{mockProducts.length}</p>
+                   <p className="text-2xl font-black">{products.length}</p>
                  </div>
                </div>
             </div>
@@ -148,9 +164,14 @@ export default function InventoryPage() {
                            </Button>
                         </td>
                         <td className="px-6 py-4">
-                          <Button size="icon" variant="ghost" className="h-8 w-8 rounded-lg">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Button size="icon" variant="ghost" className="h-8 w-8 rounded-lg" onClick={() => deleteProduct(p.id)}>
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                            <Button size="icon" variant="ghost" className="h-8 w-8 rounded-lg">
+                              <Edit2 className="h-4 w-4 text-zinc-500" />
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                       {isExpanded && (
@@ -221,39 +242,50 @@ export default function InventoryPage() {
               <div className="grid grid-cols-2 gap-6">
                 <div className="col-span-2">
                   <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-zinc-500">Barcode</label>
-                  <Input placeholder="Scan or enter barcode" className="h-12 rounded-xl bg-white focus-visible:ring-2 focus-visible:ring-zinc-900" />
+                  <Input 
+                    placeholder="Scan or enter barcode" 
+                    className="h-12 rounded-xl bg-white focus-visible:ring-2 focus-visible:ring-zinc-900" 
+                    value={newProduct.barcode}
+                    onChange={e => setNewProduct({...newProduct, barcode: e.target.value})}
+                  />
                 </div>
                 <div>
                   <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-zinc-500">Brand Name</label>
-                  <Input placeholder="e.g. Panadol Advance" className="h-12 rounded-xl bg-white focus-visible:ring-2 focus-visible:ring-zinc-900" />
+                  <Input 
+                    placeholder="e.g. Panadol Advance" 
+                    className="h-12 rounded-xl bg-white focus-visible:ring-2 focus-visible:ring-zinc-900" 
+                    value={newProduct.brandName}
+                    onChange={e => setNewProduct({...newProduct, brandName: e.target.value})}
+                  />
                 </div>
                 <div>
                   <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-zinc-500">Generic Name</label>
-                  <Input placeholder="e.g. Paracetamol" className="h-12 rounded-xl bg-white focus-visible:ring-2 focus-visible:ring-zinc-900" />
+                  <Input 
+                    placeholder="e.g. Paracetamol" 
+                    className="h-12 rounded-xl bg-white focus-visible:ring-2 focus-visible:ring-zinc-900" 
+                    value={newProduct.genericName}
+                    onChange={e => setNewProduct({...newProduct, genericName: e.target.value})}
+                  />
                 </div>
                 <div>
                   <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-zinc-500">Category</label>
-                  <select className="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 font-semibold text-zinc-900 outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 cursor-pointer">
+                  <select 
+                    className="h-12 w-full rounded-xl border border-zinc-200 bg-white px-4 font-semibold text-zinc-900 outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 cursor-pointer"
+                    value={newProduct.category}
+                    onChange={e => setNewProduct({...newProduct, category: e.target.value})}
+                  >
                      <option>Pain Relief</option>
                      <option>Antibiotics</option>
                      <option>Cholesterol</option>
                      <option>Respiratory</option>
                   </select>
                 </div>
-                <div>
-                  <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-zinc-500">Manufacturer</label>
-                  <Input placeholder="e.g. GSK" className="h-12 rounded-xl bg-white focus-visible:ring-2 focus-visible:ring-zinc-900" />
-                </div>
-                <div className="col-span-2">
-                  <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-zinc-500">Shelf Location</label>
-                  <Input placeholder="e.g. A3-Shelf-2" className="h-12 rounded-xl bg-white focus-visible:ring-2 focus-visible:ring-zinc-900" />
-                </div>
               </div>
             </div>
 
             <div className="border-t border-zinc-100 bg-white p-6 flex justify-end gap-3">
                <Button variant="outline" className="h-12 font-bold px-8" onClick={() => setIsAddModalOpen(false)}>Cancel</Button>
-               <Button className="h-12 bg-zinc-900 shadow-lg font-bold px-8" onClick={() => setIsAddModalOpen(false)}>Save Product</Button>
+               <Button className="h-12 bg-zinc-900 shadow-lg font-bold px-8" onClick={handleAddProduct}>Save Product</Button>
             </div>
           </div>
         </div>

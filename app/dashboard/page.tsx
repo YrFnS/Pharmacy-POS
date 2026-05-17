@@ -1,19 +1,23 @@
 'use client';
 
 import React from 'react';
-import { mockProducts } from '@/lib/mock';
+import { useStore } from '@/lib/store';
 import { AlertTriangle, Clock, TrendingDown, PackageOpen, BadgeCheck, FileWarning, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui';
 
 export default function DashboardPage() {
+  const { products, transactions, deleteBatch } = useStore();
   
   // Calculate analytics
-  const allBatches = mockProducts.flatMap(p => p.batches.map(b => ({ ...b, product: p })));
+  const allBatches = products.flatMap(p => p.batches.map(b => ({ ...b, product: p })));
   
+  const totalSalesToday = transactions.reduce((sum, t) => sum + t.total, 0);
+  const itemsSoldToday = transactions.reduce((sum, t) => sum + t.items.reduce((s, i) => s + i.quantity, 0), 0);
+
   // Fake thresholds for simulation
   const lowStockThreshold = 20;
   
-  const lowStockItems = mockProducts.map(p => {
+  const lowStockItems = products.map(p => {
     const totalQty = p.batches.reduce((sum, b) => sum + b.quantity, 0);
     return { product: p, totalQty };
   }).filter(item => item.totalQty < lowStockThreshold);
@@ -51,14 +55,14 @@ export default function DashboardPage() {
                  <BadgeCheck className="h-6 w-6" />
                </div>
                <p className="text-sm font-bold text-zinc-500">Active Products</p>
-               <p className="mt-1 text-3xl font-black text-zinc-900">{mockProducts.length}</p>
+               <p className="mt-1 text-3xl font-black text-zinc-900">{products.length}</p>
             </div>
             <div className="rounded-3xl border border-zinc-200/50 bg-white p-6 shadow-sm">
                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
                  <TrendingDown className="h-6 w-6" />
                </div>
                <p className="text-sm font-bold text-zinc-500">Items Sold Today</p>
-               <p className="mt-1 text-3xl font-black text-zinc-900">142</p>
+               <p className="mt-1 text-3xl font-black text-zinc-900">{itemsSoldToday}</p>
             </div>
             <div className="rounded-3xl border border-zinc-200/50 bg-white p-6 shadow-sm">
                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
@@ -144,7 +148,11 @@ export default function DashboardPage() {
                               </span>
                             </div>
                           </div>
-                          <Button variant="outline" className="border-red-200 text-red-600 hover:bg-red-50 font-bold gap-2">
+                          <Button 
+                            variant="outline" 
+                            className="border-red-200 text-red-600 hover:bg-red-50 font-bold gap-2"
+                            onClick={() => deleteBatch(batch.product.id, batch.id)}
+                          >
                              Write-off
                              <ArrowRight className="h-4 w-4" />
                           </Button>
