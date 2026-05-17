@@ -30,8 +30,7 @@ export default function POSPage() {
     isReturnMode,
     setIsReturnMode,
     products,
-    customers,
-    settings
+    customers
   } = useStore();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -74,6 +73,7 @@ export default function POSPage() {
   });
 
   const subtotal = cartData.reduce((sum, item) => sum + item.total, 0);
+  const totalDiscount = cartData.reduce((sum, item) => sum + ((item.batch?.price || 0) * (item.discountPercent / 100) * item.quantity), 0);
   
   const getSubstitutes = (genericName: string, excludeId: string) => {
     return products.filter(p => p.genericName === genericName && p.id !== excludeId && p.batches.some(b => b.quantity > 0));
@@ -87,7 +87,7 @@ export default function POSPage() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900 text-white shadow-sm shadow-zinc-900/10">
             <Pill className="h-4 w-4" />
           </div>
-          <h1 className="text-xl font-bold tracking-tight">{settings.pharmacyName}</h1>
+          <h1 className="text-xl font-bold tracking-tight">{t('app_title')}</h1>
         </div>
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2 rounded-xl bg-zinc-100 p-1 pl-4">
@@ -177,7 +177,7 @@ export default function POSPage() {
                           </div>
                         )}
                         <div className="text-end">
-                          <div className={cn("font-bold", !outOfStock ? "text-teal-600" : "text-zinc-400")}>{p.batches[0].price.toLocaleString()} {settings.currency}</div>
+                          <div className={cn("font-bold", !outOfStock ? "text-teal-600" : "text-zinc-400")}>{p.batches[0].price.toLocaleString()} {t('currency')}</div>
                           <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Exp: {p.batches[0].expiryDate}</div>
                         </div>
                       </div>
@@ -196,7 +196,7 @@ export default function POSPage() {
                                <div className="text-[10px] font-semibold text-zinc-500">{sub.batches[0].quantity} in stock</div>
                              </div>
                              <div className="text-right">
-                               <div className="font-bold text-teal-600 text-sm">{sub.batches[0].price.toLocaleString()} {settings.currency}</div>
+                               <div className="font-bold text-teal-600 text-sm">{sub.batches[0].price.toLocaleString()} {t('currency')}</div>
                              </div>
                            </button>
                         ))}
@@ -241,7 +241,7 @@ export default function POSPage() {
                     
                     <div className="mt-4 flex w-full items-end justify-between">
                       <div className={cn("text-sm font-black focus:outline-none", outOfStock ? "text-zinc-400" : "text-teal-600")}>
-                        {p.batches[0].price.toLocaleString()} <span className="text-[10px]">{settings.currency}</span>
+                        {p.batches[0].price.toLocaleString()} <span className="text-[10px]">IQD</span>
                       </div>
                       <div className="flex h-6 w-6 items-center justify-center rounded-md bg-zinc-100 text-zinc-400">
                         <Plus className="h-3 w-3" />
@@ -355,7 +355,7 @@ export default function POSPage() {
 
                           <div className="text-right">
                              <div className={cn("text-sm font-black", item.isReturn ? "text-red-600" : "text-zinc-900")}>
-                               {item.total.toLocaleString()} {settings.currency}
+                               {item.total.toLocaleString()} IQD
                              </div>
                              {item.quantity > 1 && (
                                <div className="text-[10px] font-bold text-zinc-400">{item.quantity} × {item.batch?.price.toLocaleString()}</div>
@@ -373,11 +373,11 @@ export default function POSPage() {
             <div className="space-y-3 mb-5">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-zinc-500 font-semibold uppercase tracking-widest">{t('subtotal')}</span>
-                <span className={cn("font-bold", subtotal < 0 ? "text-red-600" : "text-zinc-900")}>{subtotal.toLocaleString()} {settings.currency}</span>
+                <span className={cn("font-bold", subtotal < 0 ? "text-red-600" : "text-zinc-900")}>{subtotal.toLocaleString()} {t('currency')}</span>
               </div>
               <div className="flex items-center justify-between text-xs">
                 <span className="text-zinc-500 font-semibold uppercase tracking-widest">{t('discount')}</span>
-                <span className="font-bold text-emerald-600">0 {settings.currency}</span>
+                <span className="font-bold text-emerald-600">{totalDiscount.toLocaleString()} {t('currency')}</span>
               </div>
               
               <div className="mt-2 rounded-xl bg-zinc-900 p-4 text-white shadow-xl shadow-zinc-900/20">
@@ -387,7 +387,7 @@ export default function POSPage() {
                     <span className={cn("block text-3xl font-black tracking-tight leading-none mb-1", subtotal < 0 && "text-red-400")}>
                       {subtotal.toLocaleString()}
                     </span>
-                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{settings.currency}</span>
+                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{t('currency')}</span>
                   </div>
                 </div>
               </div>

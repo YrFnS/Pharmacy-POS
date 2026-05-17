@@ -36,6 +36,21 @@ export default function InventoryPage() {
     setNewProduct({ barcode: '', brandName: '', genericName: '', category: 'Pain Relief' });
   };
 
+  const lowStockThreshold = 20;
+
+  const lowStockCount = products.filter(p => {
+    const totalQty = p.batches.reduce((sum, b) => sum + b.quantity, 0);
+    return totalQty < lowStockThreshold;
+  }).length;
+
+  const today = new Date();
+  const ninetyDays = new Date(today.getTime() + 90 * 24 * 60 * 60 * 1000);
+
+  const expiringCount = products.flatMap(p => p.batches).filter(b => {
+    const expDate = new Date(b.expiryDate);
+    return expDate <= ninetyDays && expDate >= today;
+  }).length;
+
   return (
     <div className="flex h-full flex-col bg-[#F9FAFB]">
       {/* Header */}
@@ -80,7 +95,7 @@ export default function InventoryPage() {
                  </div>
                  <div>
                    <p className="text-sm font-bold text-zinc-500">Low Stock items</p>
-                   <p className="text-2xl font-black">2</p>
+                   <p className="text-2xl font-black">{lowStockCount}</p>
                  </div>
                </div>
             </div>
@@ -91,7 +106,7 @@ export default function InventoryPage() {
                  </div>
                  <div>
                    <p className="text-sm font-bold text-zinc-500">Expiring Soon</p>
-                   <p className="text-2xl font-black">4</p>
+                   <p className="text-2xl font-black">{expiringCount}</p>
                  </div>
                </div>
             </div>

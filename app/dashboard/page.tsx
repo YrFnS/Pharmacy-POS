@@ -6,7 +6,7 @@ import { AlertTriangle, Clock, TrendingDown, PackageOpen, BadgeCheck, FileWarnin
 import { Button } from '@/components/ui';
 
 export default function DashboardPage() {
-  const { products, transactions, deleteBatch } = useStore();
+  const { products, transactions } = useStore();
   
   // Calculate analytics
   const allBatches = products.flatMap(p => p.batches.map(b => ({ ...b, product: p })));
@@ -14,7 +14,7 @@ export default function DashboardPage() {
   const totalSalesToday = transactions.reduce((sum, t) => sum + t.total, 0);
   const itemsSoldToday = transactions.reduce((sum, t) => sum + t.items.reduce((s, i) => s + i.quantity, 0), 0);
 
-  // Fake thresholds for simulation
+  // Thresholds for alerts
   const lowStockThreshold = 20;
   
   const lowStockItems = products.map(p => {
@@ -148,11 +148,7 @@ export default function DashboardPage() {
                               </span>
                             </div>
                           </div>
-                          <Button 
-                            variant="outline" 
-                            className="border-red-200 text-red-600 hover:bg-red-50 font-bold gap-2"
-                            onClick={() => deleteBatch(batch.product.id, batch.id)}
-                          >
+                          <Button variant="outline" className="border-red-200 text-red-600 hover:bg-red-50 font-bold gap-2">
                              Write-off
                              <ArrowRight className="h-4 w-4" />
                           </Button>

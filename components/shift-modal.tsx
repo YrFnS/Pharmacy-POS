@@ -4,7 +4,6 @@ import { useStore } from '@/lib/store';
 import { Button, Input } from '@/components/ui';
 import { Wallet, X, Calculator } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { cn } from '@/lib/utils';
 
 export function ShiftModal() {
   const { isShiftOpen, setIsShiftOpen, shiftCash, setShiftCash, isShiftModalOpen, setIsShiftModalOpen, transactions } = useStore();
@@ -19,8 +18,6 @@ export function ShiftModal() {
     .reduce((sum, t) => sum + t.total, 0);
 
   const expectedInDrawer = shiftCash + cashSales;
-  const actualAmount = Number(amount) || 0;
-  const difference = actualAmount - expectedInDrawer;
 
   const handleOpenShift = (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,17 +94,6 @@ export function ShiftModal() {
                     <span className="font-bold text-zinc-500">Expected in Drawer</span>
                     <span className="font-black text-zinc-900 text-xl">{expectedInDrawer.toLocaleString()} IQD</span>
                  </div>
-                 {amount && (
-                    <div className="flex justify-between items-center pt-2 border-t border-dashed border-zinc-200">
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Difference</span>
-                      <span className={cn(
-                        "font-black text-sm",
-                        difference === 0 ? "text-emerald-500" : difference > 0 ? "text-blue-500" : "text-red-500"
-                      )}>
-                        {difference > 0 ? '+' : ''}{difference.toLocaleString()} IQD
-                      </span>
-                    </div>
-                 )}
              </div>
              
              <div>

@@ -8,27 +8,16 @@ import {
   Users, 
   Settings, 
   Clock,
-  LayoutDashboard,
-  LogOut
+  LayoutDashboard
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/use-translation';
-import { useStore } from '@/lib/store';
 
 import Image from 'next/image';
 
 export function Sidebar() {
   const pathname = usePathname();
   const { t, isRtl } = useTranslation();
-  const { setIsShiftOpen, clearCart } = useStore();
-
-  const handleLogout = () => {
-    if (confirm('Are you sure you want to logout? Current shift data will remain, but cart will be cleared.')) {
-      clearCart();
-      setIsShiftOpen(false);
-      window.location.reload(); // Simple way to "logout" in this app
-    }
-  };
 
   const links = [
     { href: '/', icon: ShoppingCart, label: 'POS' },
@@ -71,15 +60,7 @@ export function Sidebar() {
       </nav>
       
       {/* User profile / Logout space down here */}
-      <div className="mt-auto flex flex-col items-center gap-4">
-        <button 
-          onClick={handleLogout}
-          className="flex h-10 w-10 items-center justify-center rounded-xl text-zinc-400 hover:bg-red-50 hover:text-red-500 transition-all"
-          title="Logout"
-        >
-          <LogOut className="h-5 w-5" />
-        </button>
-
+      <div className="mt-auto">
         <div className="relative h-10 w-10 overflow-hidden rounded-full border border-zinc-200">
            <Image 
              src="https://picsum.photos/seed/doctor/100/100" 

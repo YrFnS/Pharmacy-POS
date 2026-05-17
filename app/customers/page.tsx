@@ -6,7 +6,7 @@ import { Button, Input } from '@/components/ui';
 import { Search, User, Receipt, CreditCard, CheckCircle2, UserPlus, X } from 'lucide-react';
 
 export default function CustomersPage() {
-  const { customers, updateCustomer, addCustomer, settleDebt } = useStore();
+  const { customers, updateCustomer, addCustomer, settleDebt, transactions } = useStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -26,15 +26,9 @@ export default function CustomersPage() {
     setNewCustomer({ name: '', phone: '' });
   };
 
-  const { transactions, products } = useStore();
-  const customerTransactions = transactions.filter(t => t.customerId === selectedCustomerId);
-
-  const purchaseHistory = customerTransactions.map(t => ({
-    id: t.id,
-    date: new Date(t.timestamp).toLocaleDateString(),
-    total: t.total,
-    paid: t.paymentMethod !== 'tab'
-  }));
+  const customerTransactions = selectedCustomer 
+    ? transactions.filter(t => t.customerId === selectedCustomer.id).sort((a,b) => b.timestamp - a.timestamp)
+    : [];
 
   return (
     <div className="flex h-full bg-[#F9FAFB]">
@@ -156,35 +150,34 @@ export default function CustomersPage() {
                      <Button variant="ghost" size="sm" className="font-bold">View All</Button>
                    </div>
                    <div className="divide-y divide-zinc-100 p-0">
-                     {purchaseHistory.length === 0 ? (
-                       <div className="p-8 text-center text-zinc-400">
-                         <p className="text-sm font-bold italic">No purchase history found for this customer.</p>
-                       </div>
-                     ) : (
-                       purchaseHistory.map(rec => (
-                         <div key={rec.id} className="flex items-center justify-between p-6 hover:bg-zinc-50/50 transition-colors">
-                            <div className="flex items-center gap-4">
-                              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-100 text-zinc-500">
-                                <Receipt className="h-6 w-6" />
-                              </div>
+                     {customerTransactions.map(rec => (
+                        <div key={rec.id} className="flex items-center justify-between p-6 hover:bg-zinc-50/50 transition-colors">
+                           <div className="flex items-center gap-4">
+                             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-100 text-zinc-500">
+                               <Receipt className="h-6 w-6" />
+                             </div>
+                             <div>
+                               <p className="font-bold text-zinc-900 line-clamp-1">{rec.id}</p>
+                               <p className="text-xs font-semibold text-zinc-500">{new Date(rec.timestamp).toLocaleString()}</p>
+                             </div>
+                           </div>
+                           <div className="text-right flex items-center gap-6">
                               <div>
-                                <p className="font-bold text-zinc-900"># {rec.id}</p>
-                                <p className="text-xs font-semibold text-zinc-500">{rec.date}</p>
+                                <p className="text-xl font-black text-zinc-900">{rec.total.toLocaleString()} IQD</p>
+                                <p className={`text-xs font-bold uppercase tracking-widest mt-1 ${rec.paymentMethod !== 'tab' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                  {rec.paymentMethod.toUpperCase()}
+                                </p>
                               </div>
-                            </div>
-                            <div className="text-right flex items-center gap-6">
-                               <div>
-                                 <p className="text-xl font-black text-zinc-900">{rec.total.toLocaleString()} IQD</p>
-                                 <p className={`text-xs font-bold uppercase tracking-widest mt-1 ${rec.paid ? 'text-emerald-600' : 'text-amber-600'}`}>
-                                   {rec.paid ? 'Paid' : 'Unpaid'}
-                                 </p>
-                               </div>
-                               <Button variant="outline" className="rounded-xl border-zinc-200 font-bold hover:bg-zinc-100">
-                                 Receipt
-                               </Button>
-                            </div>
-                         </div>
-                       ))
+                              <Button variant="outline" className="rounded-xl border-zinc-200 font-bold hover:bg-zinc-100">
+                                Receipt
+                              </Button>
+                           </div>
+                        </div>
+                     ))}
+                     {customerTransactions.length === 0 && (
+                       <div className="p-8 text-center text-zinc-500 font-semibold">
+                         No purchase history available.
+                       </div>
                      )}
                    </div>
                 </div>

@@ -2,30 +2,30 @@
 
 import React, { useState } from 'react';
 import { Button, Input } from '@/components/ui';
-import { Save, Store, Users, Receipt, Trash2, X, CheckCircle2 } from 'lucide-react';
-import { useStore } from '@/lib/store';
-import { cn } from '@/lib/utils';
+import { Save, Store, Users, Receipt, CheckCircle2, UserPlus, X, Trash2 } from 'lucide-react';
+import { useStore, User } from '@/lib/store';
 
 export default function SettingsPage() {
-  const { settings, updateSettings, users, addUser, deleteUser } = useStore();
-  const [formSettings, setFormSettings] = useState(settings);
+  const { settings, updateSettings, users, addUser, updateUser, deleteUser } = useStore();
+  
+  const [localSettings, setLocalSettings] = useState(settings);
+  const [success, setSuccess] = useState(false);
+  
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
-  const [newUser, setNewUser] = useState({ name: '', email: '', role: 'Cashier' as const, permissions: 'Basic POS, No Delete' });
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [newUser, setNewUser] = useState({ name: '', email: '', role: 'cashier' as User['role'] });
 
   const handleSaveSettings = () => {
-    updateSettings(formSettings);
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 2000);
+    updateSettings(localSettings);
+    setSuccess(true);
+    setTimeout(() => setSuccess(false), 2000);
   };
 
   const handleAddUser = () => {
     if (!newUser.name || !newUser.email) return;
     addUser(newUser);
     setIsAddUserModalOpen(false);
-    setNewUser({ name: '', email: '', role: 'Cashier', permissions: 'Basic POS, No Delete' });
+    setNewUser({ name: '', email: '', role: 'cashier' });
   };
-
   return (
     <div className="flex h-full flex-col bg-[#F9FAFB]">
       <header className="flex h-16 shrink-0 items-center justify-between border-b border-zinc-200/50 bg-white/80 px-8 backdrop-blur-xl">
@@ -33,16 +33,13 @@ export default function SettingsPage() {
           <h1 className="text-xl font-bold tracking-tight text-zinc-900">Settings</h1>
           <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400">Configuration & Admin</p>
         </div>
-        <div className="flex items-center gap-3">
-           {showSuccess && (
-             <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm animate-in fade-in slide-in-from-right-4">
-                <CheckCircle2 className="h-4 w-4" />
-                Changes Saved
-             </div>
-           )}
-           <Button className="gap-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 font-bold text-white shadow-xl shadow-zinc-900/10" onClick={handleSaveSettings}>
-             <Save className="h-4 w-4" />
-             Save All Changes
+        <div className="flex gap-3">
+           <Button 
+             className={`gap-2 rounded-xl font-bold text-white shadow-xl ${success ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20' : 'bg-zinc-900 hover:bg-zinc-800 shadow-zinc-900/10'}`}
+             onClick={handleSaveSettings}
+           >
+             {success ? <CheckCircle2 className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+             {success ? 'Saved!' : 'Save All Changes'}
            </Button>
         </div>
       </header>
@@ -66,16 +63,16 @@ export default function SettingsPage() {
                  <div>
                    <label className="mb-3 block text-xs font-bold uppercase tracking-widest text-zinc-400">Pharmacy Name</label>
                    <Input 
-                     value={formSettings.pharmacyName} 
-                     onChange={e => setFormSettings({...formSettings, pharmacyName: e.target.value})}
+                     value={localSettings.pharmacyName} 
+                     onChange={e => setLocalSettings(s => ({...s, pharmacyName: e.target.value}))}
                      className="h-12 rounded-xl border-zinc-200 bg-zinc-50/50 font-bold" 
                    />
                  </div>
                  <div>
                    <label className="mb-3 block text-xs font-bold uppercase tracking-widest text-zinc-400">Currency</label>
                    <select 
-                     value={formSettings.currency}
-                     onChange={e => setFormSettings({...formSettings, currency: e.target.value})}
+                     value={localSettings.currency}
+                     onChange={e => setLocalSettings(s => ({...s, currency: e.target.value}))}
                      className="h-12 w-full appearance-none rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 font-bold text-zinc-900 outline-none transition-all focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
                    >
                      <option value="IQD">Iraqi Dinar (IQD)</option>
@@ -85,8 +82,8 @@ export default function SettingsPage() {
                  <div className="col-span-2">
                    <label className="mb-3 block text-xs font-bold uppercase tracking-widest text-zinc-400">Address</label>
                    <Input 
-                     value={formSettings.address} 
-                     onChange={e => setFormSettings({...formSettings, address: e.target.value})}
+                     value={localSettings.address} 
+                     onChange={e => setLocalSettings(s => ({...s, address: e.target.value}))}
                      className="h-12 rounded-xl border-zinc-200 bg-zinc-50/50 font-bold" 
                    />
                  </div>
@@ -111,8 +108,8 @@ export default function SettingsPage() {
                    <label className="mb-3 block text-xs font-bold uppercase tracking-widest text-zinc-400">Footer Message</label>
                    <textarea 
                      className="h-24 w-full resize-none rounded-xl border border-zinc-200 bg-zinc-50/50 p-4 font-medium text-zinc-900 outline-none transition-all placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
-                     value={formSettings.receiptFooter}
-                     onChange={e => setFormSettings({...formSettings, receiptFooter: e.target.value})}
+                     value={localSettings.receiptFooter}
+                     onChange={e => setLocalSettings(s => ({...s, receiptFooter: e.target.value}))}
                    />
                  </div>
                  <div className="flex items-center justify-between">
@@ -122,10 +119,10 @@ export default function SettingsPage() {
                    </div>
                    <label className="relative inline-flex cursor-pointer items-center">
                      <input 
-                        type="checkbox" 
-                        className="peer sr-only" 
-                        checked={formSettings.autoPrintReceipt}
-                        onChange={e => setFormSettings({...formSettings, autoPrintReceipt: e.target.checked})}
+                       type="checkbox" 
+                       className="peer sr-only" 
+                       checked={localSettings.printReceipts}
+                       onChange={e => setLocalSettings(s => ({...s, printReceipts: e.target.checked}))}
                      />
                      <div className="peer h-7 w-14 rounded-full bg-zinc-200 after:absolute after:start-[4px] after:top-[4px] after:h-5 after:w-5 after:rounded-full after:border after:border-zinc-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-zinc-900 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-zinc-900 peer-focus:ring-offset-2"></div>
                    </label>
@@ -167,16 +164,15 @@ export default function SettingsPage() {
                              <p className="text-xs font-semibold text-zinc-500">{user.email}</p>
                           </td>
                           <td className="px-6 py-4">
-                             <span className={cn(
-                               "inline-flex rounded-md px-2 py-1 text-xs font-bold",
-                               user.role === 'Manager' ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-600"
-                             )}>
+                             <span className={`inline-flex rounded-md px-2 py-1 text-xs font-bold ${user.role === 'manager' || user.role === 'admin' ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-600'}`}>
                                {user.role}
                              </span>
                           </td>
-                          <td className="px-6 py-4 text-xs font-bold text-zinc-500">{user.permissions}</td>
+                          <td className="px-6 py-4 text-xs font-bold text-zinc-500">
+                            {user.role === 'manager' || user.role === 'admin' ? 'All permissions' : 'Basic POS, No Delete'}
+                          </td>
                           <td className="px-6 py-4 text-right">
-                             <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => deleteUser(user.id)}>
+                             <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => deleteUser(user.id)}>
                                <Trash2 className="h-4 w-4" />
                              </Button>
                           </td>
@@ -203,7 +199,8 @@ export default function SettingsPage() {
                 <div>
                   <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2 block">Full Name</label>
                   <Input 
-                     placeholder="e.g. Ali Mohammed"
+                     autoFocus
+                     placeholder="John Doe"
                      value={newUser.name}
                      onChange={e => setNewUser({...newUser, name: e.target.value})}
                   />
@@ -212,7 +209,7 @@ export default function SettingsPage() {
                   <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2 block">Email Address</label>
                   <Input 
                      type="email"
-                     placeholder="ali@alshifa.com"
+                     placeholder="john@example.com"
                      value={newUser.email}
                      onChange={e => setNewUser({...newUser, email: e.target.value})}
                   />
@@ -220,15 +217,18 @@ export default function SettingsPage() {
                 <div>
                   <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2 block">Role</label>
                   <select 
-                    className="h-10 w-full rounded-lg border border-zinc-200 px-3 text-sm font-bold text-zinc-900 outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
                     value={newUser.role}
-                    onChange={e => setNewUser({...newUser, role: e.target.value as any})}
+                    onChange={e => setNewUser({...newUser, role: e.target.value as User['role']})}
+                    className="h-12 w-full appearance-none rounded-xl border border-zinc-200 bg-white px-4 font-bold text-zinc-900 outline-none transition-all focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
                   >
-                    <option value="Cashier">Cashier</option>
-                    <option value="Manager">Manager</option>
+                    <option value="cashier">Cashier</option>
+                    <option value="manager">Manager</option>
+                    <option value="admin">Admin</option>
                   </select>
                 </div>
-                <Button className="w-full h-12 bg-zinc-900 font-bold" onClick={handleAddUser}>Create User</Button>
+                <div className="pt-2">
+                  <Button className="w-full h-12 bg-zinc-900 font-bold" onClick={handleAddUser}>Add User</Button>
+                </div>
              </div>
           </div>
         </div>
