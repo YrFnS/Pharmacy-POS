@@ -31,7 +31,7 @@ export function Sidebar({ className }: { className?: string }) {
   ].filter(link => !(link.hideForCashier && currentUser?.role === 'cashier'));
 
   return (
-    <aside className={cn("flex flex-col items-center py-6 bg-white border-e border-zinc-200/50 shadow-sm z-50 shrink-0", className)}>
+    <aside className={cn("flex flex-col items-center py-6 bg-white dark:bg-zinc-900 border-e border-zinc-200/50 dark:border-zinc-800 shadow-sm z-50 shrink-0", className)}>
       {/* Brand logo space */}
       <div className="mb-8">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-600 text-white shadow-md shadow-teal-600/20">
@@ -51,8 +51,8 @@ export function Sidebar({ className }: { className?: string }) {
               className={cn(
                 "group relative flex h-12 w-12 items-center justify-center rounded-xl transition-all",
                 isActive 
-                  ? "bg-zinc-900 text-white shadow-md shadow-zinc-900/10" 
-                  : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900"
+                  ? "bg-zinc-900 text-white dark:bg-teal-600 dark:text-white shadow-md shadow-zinc-900/10" 
+                  : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
               )}
             >
               <Icon className={cn("h-5 w-5", isActive ? "" : "group-hover:scale-110 transition-transform")} />

@@ -127,42 +127,42 @@ export default function POSPage() {
   };
 
   return (
-    <div className="flex h-full flex-col bg-[#F9FAFB] font-sans text-zinc-900 selection:bg-zinc-200">
+    <div className="flex h-full flex-col bg-[#F9FAFB] dark:bg-zinc-950 font-sans text-zinc-900 dark:text-zinc-50 selection:bg-zinc-200 dark:selection:bg-zinc-800">
       {/* Header */}
-      <header className="flex h-16 shrink-0 items-center justify-between border-b border-zinc-200/50 bg-white/80 px-6 backdrop-blur-xl">
-        <div className="flex items-center gap-3 text-zinc-900">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900 text-white shadow-sm shadow-zinc-900/10">
+      <header className="flex h-16 shrink-0 items-center justify-between border-b border-zinc-200/50 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 px-6 backdrop-blur-xl">
+        <div className="flex items-center gap-3 text-zinc-900 dark:text-zinc-100">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm shadow-zinc-900/10 dark:shadow-zinc-100/5">
             <Pill className="h-4 w-4" />
           </div>
           <h1 className="text-xl font-bold tracking-tight">{t('app_title')}</h1>
         </div>
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1 rounded-xl bg-zinc-100 p-1 shadow-inner border border-zinc-200/50">
+          <div className="flex items-center gap-1 rounded-xl bg-zinc-100 dark:bg-zinc-800 p-1 shadow-inner border border-zinc-200/50 dark:border-zinc-700">
              <button 
                onClick={() => setLanguage('en')}
-               className={cn("px-3 py-1 text-[10px] font-black uppercase rounded-lg transition-all", language === 'en' ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-400 hover:text-zinc-600")}
+               className={cn("px-3 py-1 text-[10px] font-black uppercase rounded-lg transition-all", language === 'en' ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm" : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300")}
              >
                EN
              </button>
              <button 
                onClick={() => setLanguage('ar')}
-               className={cn("px-3 py-1 text-[10px] font-black uppercase rounded-lg transition-all", language === 'ar' ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-400 hover:text-zinc-600")}
+               className={cn("px-3 py-1 text-[10px] font-black uppercase rounded-lg transition-all", language === 'ar' ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm" : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300")}
              >
                AR
              </button>
           </div>
 
-          <div className="flex items-center gap-2 rounded-xl bg-zinc-100 p-1 pl-4">
+          <div className="flex items-center gap-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 p-1 pl-4 rtl:pl-1 rtl:pr-4">
              <div className="flex flex-col text-end">
-               <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Shift</span>
-               <span className={cn("text-xs font-bold", isShiftOpen ? "text-emerald-600" : "text-amber-600")}>
+               <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">Shift</span>
+               <span className={cn("text-xs font-bold", isShiftOpen ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400")}>
                  {isShiftOpen ? 'Open' : 'Closed'}
                </span>
              </div>
              <Button 
                size="sm" 
                variant={isShiftOpen ? "outline" : "default"} 
-               className={cn("rounded-lg border-none shadow-none font-bold", isShiftOpen ? "bg-white text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50" : "bg-teal-600 text-white hover:bg-teal-700")}
+               className={cn("rounded-lg border-none shadow-none font-bold", isShiftOpen ? "bg-white dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-600" : "bg-teal-600 dark:bg-teal-600 text-white hover:bg-teal-700")}
                onClick={() => setIsShiftModalOpen(true)}
              >
                {isShiftOpen ? 'Manage' : 'Open Shift'}
@@ -170,24 +170,24 @@ export default function POSPage() {
           </div>
           
           <div className="flex flex-col text-end">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">{t('cashier')}</span>
-            <span className="text-sm font-semibold text-zinc-900">Dr. Ahmed</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">{t('cashier')}</span>
+            <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Dr. Ahmed</span>
           </div>
-          <div className="h-8 w-px bg-zinc-200"></div>
+          <div className="h-8 w-px bg-zinc-200 dark:bg-zinc-800"></div>
         </div>
       </header>
 
     {/* Main Content */}
       <main className="flex flex-1 overflow-hidden">
         {/* Left column: Product Browse / Search */}
-        <div className="flex flex-1 flex-col overflow-hidden bg-[#F9FAFB]">
+        <div className="flex flex-1 flex-col overflow-hidden bg-[#F9FAFB] dark:bg-zinc-950">
           {/* Smart Search Area */}
-          <div className="relative z-20 border-b border-zinc-200/50 bg-white p-4 drop-shadow-sm">
+          <div className="relative z-20 border-b border-zinc-200/50 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 drop-shadow-sm transition-colors">
             <div className="relative mx-auto w-full max-w-4xl">
-              <Search className="absolute start-4 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-400" />
+              <Search className="absolute start-4 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" />
               <Input
                 autoFocus
-                className="h-12 rounded-xl border-zinc-200/80 bg-zinc-50/50 ps-12 text-base font-semibold shadow-inner placeholder:text-zinc-400 focus-visible:ring-1 focus-visible:ring-zinc-900 focus:bg-white"
+                className="h-12 rounded-xl border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/50 ps-12 text-base font-semibold shadow-inner placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus-visible:ring-1 focus-visible:ring-zinc-900 dark:focus-visible:ring-teal-600 focus:bg-white dark:focus:bg-zinc-800 dark:text-zinc-100"
                 placeholder={t('search_placeholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -196,22 +196,22 @@ export default function POSPage() {
             
             {/* Search Dropdown Results */}
             {searchResults.length > 0 && (
-              <div className="absolute left-1/2 top-[calc(100%+8px)] z-50 max-h-[50vh] w-full max-w-4xl -translate-x-1/2 overflow-y-auto rounded-xl border border-zinc-200 bg-white p-2 shadow-2xl ring-1 ring-black/5">
+              <div className="absolute left-1/2 top-[calc(100%+8px)] z-50 max-h-[50vh] w-full max-w-4xl -translate-x-1/2 overflow-y-auto rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-2 shadow-2xl ring-1 ring-black/5 dark:ring-white/5 transition-colors">
                 {searchResults.map((p) => {
-                  const outOfStock = p.batches[0].quantity <= 0;
+                  const outOfStock = !p.batches[0] || p.batches[0].quantity <= 0;
                   const disabled = outOfStock && !isReturnMode;
                   const substitutes = outOfStock ? getSubstitutes(p.genericName, p.id) : [];
                   
                   return (
-                    <div key={p.id} className="flex flex-col border-b border-zinc-100 last:border-0 p-1">
+                    <div key={p.id} className="flex flex-col border-b border-zinc-100 dark:border-zinc-800 last:border-0 p-1">
                     <div
                       className={cn(
                         "group flex w-full items-center justify-between rounded-lg p-3 text-start transition-all focus:outline-none cursor-pointer",
                         disabled 
-                          ? (substitutes.length ? "hover:bg-zinc-50" : "opacity-50 cursor-not-allowed") 
+                          ? (substitutes.length ? "hover:bg-zinc-50 dark:hover:bg-zinc-800" : "opacity-50 cursor-not-allowed") 
                           : isReturnMode 
-                            ? "hover:bg-red-50 focus:bg-red-50" 
-                            : "hover:bg-zinc-50 focus:bg-zinc-50"
+                            ? "hover:bg-red-50 dark:hover:bg-red-950/20 focus:bg-red-50 dark:focus:bg-red-950/20" 
+                            : "hover:bg-zinc-50 dark:hover:bg-zinc-800 focus:bg-zinc-50 dark:focus:bg-zinc-800"
                       )}
                       onClick={() => {
                         if (disabled && substitutes.length === 0) return;
@@ -219,46 +219,46 @@ export default function POSPage() {
                       }}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-400 border border-zinc-200/50 shadow-inner shrink-0">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 border border-zinc-200/50 dark:border-zinc-800 shadow-inner shrink-0">
                            {p.category.toLowerCase().includes('syrup') || p.category.toLowerCase().includes('gastro') || p.category.toLowerCase().includes('respiratory') ? <FlaskConical className="h-5 w-5" /> : p.category.toLowerCase().includes('topical') ? <Droplet className="h-5 w-5" /> : <Pill className="h-5 w-5" />}
                         </div>
                         <div>
-                          <div className={cn("font-bold", !outOfStock ? "text-zinc-900" : "text-zinc-400")}>{p.brandName}</div>
-                          <div className="text-xs font-medium text-zinc-500">
+                          <div className={cn("font-bold", !outOfStock ? "text-zinc-900 dark:text-zinc-100" : "text-zinc-400 dark:text-zinc-500")}>{p.brandName}</div>
+                          <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
                             {p.genericName} • 
-                            <span className={cn("font-bold ml-1", !outOfStock ? "text-emerald-600" : "text-red-500")}>
-                              {!outOfStock ? `${p.batches[0].quantity} in stock` : 'Out of stock'}
+                            <span className={cn("font-bold ml-1", !outOfStock ? "text-emerald-600 dark:text-emerald-400" : "text-red-500")}>
+                              {!outOfStock ? `${p.batches[0]?.quantity || 0} in stock` : 'Out of stock'}
                             </span>
                           </div>
                         </div>
                       </div>
                       <div className="flex flex-row items-center gap-4 text-end">
                         {outOfStock && substitutes.length > 0 && (
-                          <div className="rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-bold tracking-wider text-amber-700 uppercase shadow-sm">
+                          <div className="rounded-full bg-amber-100 dark:bg-amber-900/40 px-2.5 py-1 text-[10px] font-bold tracking-wider text-amber-700 dark:text-amber-400 uppercase shadow-sm">
                             Show Substitutes
                           </div>
                         )}
                         <div className="text-end">
-                          <div className={cn("font-bold", !outOfStock ? "text-teal-600" : "text-zinc-400")}>{p.batches[0].price.toLocaleString()} {t('currency')}</div>
-                          <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Exp: {p.batches[0].expiryDate}</div>
+                          <div className={cn("font-bold", !outOfStock ? "text-teal-600 dark:text-teal-400" : "text-zinc-400 dark:text-zinc-500")}>{(p.batches[0]?.price || 0).toLocaleString()} {t('currency')}</div>
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Exp: {p.batches[0]?.expiryDate || 'N/A'}</div>
                         </div>
                       </div>
                     </div>
                     {showSubstitutesFor === p.id && outOfStock && substitutes.length > 0 && (
-                      <div className="pl-6 pr-2 py-2 space-y-1 bg-amber-50/50 rounded-b-lg -mt-1 border-t border-amber-100/50">
-                        <div className="text-[10px] font-bold uppercase tracking-widest text-amber-600 mb-2">Available Substitutes</div>
+                      <div className="pl-6 pr-2 py-2 space-y-1 bg-amber-50/50 dark:bg-amber-900/10 rounded-b-lg -mt-1 border-t border-amber-100/50 dark:border-amber-900/20">
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-2">Available Substitutes</div>
                         {substitutes.map(sub => (
                            <button 
                              key={sub.id}
                              onClick={() => handleProductSelect(sub)}
-                             className="flex w-full items-center justify-between rounded-md p-2 hover:bg-white text-left transition-colors shadow-sm ring-1 ring-black/5"
+                             className="flex w-full items-center justify-between rounded-md p-2 hover:bg-white dark:hover:bg-zinc-800 text-left transition-colors shadow-sm ring-1 ring-black/5 dark:ring-white/5"
                            >
                              <div>
-                               <div className="font-bold text-zinc-900 text-sm">{sub.brandName}</div>
-                               <div className="text-[10px] font-semibold text-zinc-500">{sub.batches[0].quantity} in stock</div>
+                               <div className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">{sub.brandName}</div>
+                               <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400">{sub.batches[0]?.quantity || 0} in stock</div>
                              </div>
                              <div className="text-right">
-                               <div className="font-bold text-teal-600 text-sm">{sub.batches[0].price.toLocaleString()} {t('currency')}</div>
+                               <div className="font-bold text-teal-600 dark:text-teal-400 text-sm">{(sub.batches[0]?.price || 0).toLocaleString()} {t('currency')}</div>
                              </div>
                            </button>
                         ))}
@@ -273,7 +273,7 @@ export default function POSPage() {
 
           {/* Product Grid */}
           <div className="flex-1 overflow-y-auto p-6">
-            <h3 className="mb-4 text-sm font-bold uppercase tracking-widest text-zinc-400">Products Catalog</h3>
+            <h3 className="mb-4 text-sm font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600">Products Catalog</h3>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {products.map(p => {
                  const outOfStock = !p.batches[0] || p.batches[0].quantity <= 0;
@@ -282,32 +282,32 @@ export default function POSPage() {
                   <button 
                     key={p.id}
                     className={cn(
-                      "flex flex-col items-start rounded-2xl border p-4 text-left shadow-sm transition-all active:scale-[0.98] bg-white",
+                      "flex flex-col items-start rounded-2xl border p-4 text-left shadow-sm transition-all active:scale-[0.98] bg-white dark:bg-zinc-900",
                       disabled 
-                        ? "opacity-50 cursor-not-allowed border-zinc-100" 
+                        ? "opacity-50 cursor-not-allowed border-zinc-100 dark:border-zinc-800" 
                         : isReturnMode 
-                          ? "border-red-100 hover:border-red-500/30 hover:bg-red-50/50 hover:shadow-md" 
-                          : "border-zinc-200/60 hover:border-teal-500/30 hover:bg-teal-50/10 hover:shadow-md"
+                          ? "border-red-100 dark:border-red-900/50 hover:border-red-500/30 dark:hover:border-red-500/50 hover:bg-red-50/50 dark:hover:bg-red-950/20 hover:shadow-md" 
+                          : "border-zinc-200/60 dark:border-zinc-800 hover:border-teal-500/30 dark:hover:border-teal-500/50 hover:bg-teal-50/10 dark:hover:bg-teal-950/10 hover:shadow-md"
                     )}
                     disabled={disabled}
                     onClick={() => handleProductSelect(p)}
                   >
                     <div className="mb-4 flex flex-row w-full justify-between items-start">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-400 border border-zinc-200/50 shadow-inner">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 border border-zinc-200/50 dark:border-zinc-800 shadow-inner">
                          {p.category.toLowerCase().includes('syrup') || p.category.toLowerCase().includes('gastro') || p.category.toLowerCase().includes('respiratory') ? <FlaskConical className="h-5 w-5" /> : p.category.toLowerCase().includes('topical') ? <Droplet className="h-5 w-5" /> : <Pill className="h-5 w-5" />}
                       </div>
                       {outOfStock ? (
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-red-500 bg-red-50 px-2 py-1 rounded-full">Out of stock</span>
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-red-500 bg-red-50 dark:bg-red-900/30 px-2 py-1 rounded-full">Out of stock</span>
                       ) : (
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">{p.batches[0].quantity} in stock</span>
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-1 rounded-full">{p.batches[0]?.quantity || 0} in stock</span>
                       )}
                     </div>
-                    <div className="line-clamp-1 w-full text-base font-bold text-zinc-900">{p.brandName}</div>
-                    <div className="mt-1 line-clamp-1 text-xs font-semibold text-zinc-500">{p.genericName}</div>
+                    <div className="line-clamp-1 w-full text-base font-bold text-zinc-900 dark:text-zinc-100">{p.brandName}</div>
+                    <div className="mt-1 line-clamp-1 text-xs font-semibold text-zinc-500 dark:text-zinc-400">{p.genericName}</div>
                     
                     <div className="mt-4 flex w-full items-end justify-between">
-                      <div className={cn("text-sm font-black focus:outline-none", outOfStock ? "text-zinc-400" : "text-teal-600")}>
-                        {p.batches[0].price.toLocaleString()} <span className="text-[10px]">IQD</span>
+                      <div className={cn("text-sm font-black focus:outline-none", outOfStock ? "text-zinc-400 dark:text-zinc-500" : "text-teal-600 dark:text-teal-400")}>
+                        {(p.batches[0]?.price || 0).toLocaleString()} <span className="text-[10px]">IQD</span>
                       </div>
                     </div>
                  </button>
@@ -320,62 +320,62 @@ export default function POSPage() {
         {/* Right column: Cart, Customer, Totals */}
         <div 
           className={cn(
-            "w-[420px] shrink-0 border-s border-zinc-200/50 flex flex-col shadow-[-10px_0_30px_-10px_rgba(0,0,0,0.02)] z-10 select-none transition-colors",
-            isReturnMode ? "bg-red-50/20" : "bg-white"
+            "w-[420px] shrink-0 border-s border-zinc-200/50 dark:border-zinc-800 flex flex-col shadow-[-10px_0_30px_-10px_rgba(0,0,0,0.02)] z-10 select-none transition-colors",
+            isReturnMode ? "bg-red-50/20 dark:bg-red-950/10" : "bg-white dark:bg-zinc-900"
           )}
         >
 
           
           {/* Customer Selection */}
-          <div className="border-b border-zinc-100 p-4">
+          <div className="border-b border-zinc-100 dark:border-zinc-800 p-4">
             <div className="relative group">
-              <UserIcon className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400 transition-colors group-hover:text-zinc-600" />
+              <UserIcon className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 transition-colors group-hover:text-zinc-600 dark:group-hover:text-zinc-300" />
               <select 
-                className="w-full appearance-none rounded-lg border-none bg-zinc-50/80 py-2.5 ps-10 pe-4 text-sm font-bold text-zinc-900 outline-none transition-all hover:bg-zinc-100 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 cursor-pointer"
+                className="w-full appearance-none rounded-lg border-none bg-zinc-50/80 dark:bg-zinc-800/80 py-2.5 ps-10 pe-4 text-sm font-bold text-zinc-900 dark:text-zinc-100 outline-none transition-all hover:bg-zinc-100 dark:hover:bg-zinc-700 focus:border-zinc-900 dark:focus:border-teal-600 focus:ring-1 focus:ring-zinc-900 dark:focus:ring-teal-600 cursor-pointer"
                 value={customerId}
                 onChange={(e) => setCustomer(e.target.value)}
               >
                 {customers.map(c => (
-                  <option key={c.id} value={c.id}>{c.name} {c.debt > 0 ? `• Debt: ${c.debt.toLocaleString()}` : ''}</option>
+                  <option key={c.id} value={c.id} className="dark:bg-zinc-800">{c.name} {c.debt > 0 ? `• Debt: ${c.debt.toLocaleString()}` : ''}</option>
                 ))}
               </select>
             </div>
           </div>
 
-          <div className="flex bg-zinc-50 border-b border-zinc-100 p-2">
+          <div className="flex bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-100 dark:border-zinc-700 p-2">
             <button
               onClick={() => setIsReturnMode(false)}
-              className={cn("flex-1 rounded-lg py-2 text-xs font-bold transition-all", !isReturnMode ? "bg-white shadow-sm text-zinc-900 border border-zinc-200/50" : "text-zinc-500 hover:text-zinc-700")}
+              className={cn("flex-1 rounded-lg py-2 text-xs font-bold transition-all", !isReturnMode ? "bg-white dark:bg-zinc-700 shadow-sm text-zinc-900 dark:text-white border border-zinc-200/50 dark:border-zinc-600" : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300")}
             >
               Sales Mode
             </button>
             <button
               onClick={() => setIsReturnMode(true)}
-              className={cn("flex-1 rounded-lg py-2 text-xs font-bold transition-all", isReturnMode ? "bg-red-50 text-red-600 shadow-sm border border-red-200/50" : "text-zinc-500 hover:text-zinc-700")}
+              className={cn("flex-1 rounded-lg py-2 text-xs font-bold transition-all", isReturnMode ? "bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 shadow-sm border border-red-200/50 dark:border-red-900/30" : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300")}
             >
               Return Mode
             </button>
           </div>
 
           {/* Cart Items */}
-          <div className="flex-1 overflow-y-auto bg-zinc-50/30 p-2">
+          <div className="flex-1 overflow-y-auto bg-zinc-50/30 dark:bg-zinc-900/30 p-2">
             {cartData.length === 0 ? (
-               <div className="flex h-full flex-col items-center justify-center text-zinc-400 opacity-60">
+               <div className="flex h-full flex-col items-center justify-center text-zinc-400 dark:text-zinc-600 opacity-60">
                   <ScrollText className="mb-4 h-12 w-12" />
                   <p className="text-sm font-bold">{t('cart')} is empty</p>
                </div>
             ) : (
                <div className="space-y-4 pt-2">
                   {cartData.map((item) => (
-                    <div key={item.cartItemId} className={cn("group relative flex flex-col gap-3 rounded-xl border p-3 shadow-sm transition-colors", item.isReturn ? "border-red-200/60 bg-red-50/30 hover:border-red-300" : "border-zinc-200/60 bg-white hover:border-zinc-300")}>
+                    <div key={item.cartItemId} className={cn("group relative flex flex-col gap-3 rounded-xl border p-3 shadow-sm transition-colors", item.isReturn ? "border-red-200/60 dark:border-red-900/40 bg-red-50/30 dark:bg-red-950/20 hover:border-red-300" : "border-zinc-200/60 dark:border-zinc-800 bg-white dark:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700")}>
                         {item.isReturn && (
-                           <div className="absolute -top-2 left-3 rounded text-[9px] font-bold uppercase tracking-wider bg-red-100 px-1.5 py-0.5 text-red-700 shadow-sm border border-red-200/50">Return</div>
+                           <div className="absolute -top-2 left-3 rounded text-[9px] font-bold uppercase tracking-wider bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 px-1.5 py-0.5 shadow-sm border border-red-200/50 dark:border-red-900/50">Return</div>
                         )}
                         <div className="flex justify-between items-start gap-2">
                           <div className="w-full mt-1">
-                            <div className="font-bold text-zinc-900 line-clamp-1">{item.product?.brandName}</div>
-                            <div className="text-[10px] font-semibold text-zinc-500">{item.product?.genericName}</div>
-                            <div className="mt-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                            <div className="font-bold text-zinc-900 dark:text-zinc-100 line-clamp-1">{item.product?.brandName}</div>
+                            <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400">{item.product?.genericName}</div>
+                            <div className="mt-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
                                <span>B: {item.batch?.batchNo}</span>
                                <span>•</span>
                                <span>Exp: {item.batch?.expiryDate}</span>
@@ -384,24 +384,24 @@ export default function POSPage() {
                           
                           <button 
                             onClick={() => removeFromCart(item.cartItemId)}
-                            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-zinc-300 hover:bg-red-50 hover:text-red-600 transition-colors"
+                            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-zinc-300 dark:text-zinc-600 hover:bg-red-50 dark:hover:bg-red-950/50 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
                         
-                        <div className="flex items-center justify-between border-t border-zinc-100 pt-2">
-                          <div className={cn("flex items-center gap-1 rounded-lg p-1 border", item.isReturn ? "bg-red-50/50 border-red-100" : "bg-zinc-50 border-zinc-200/50")}>
+                        <div className="flex items-center justify-between border-t border-zinc-100 dark:border-zinc-700 pt-2">
+                          <div className={cn("flex items-center gap-1 rounded-lg p-1 border", item.isReturn ? "bg-red-50/50 dark:bg-red-950/30 border-red-100 dark:border-red-900/30" : "bg-zinc-50 dark:bg-zinc-900 border-zinc-200/50 dark:border-zinc-700")}>
                             <button 
                               onClick={() => updateQuantity(item.cartItemId, -1)}
-                              className="flex h-6 w-6 items-center justify-center rounded-md bg-white text-zinc-500 shadow-sm hover:text-zinc-900 active:scale-95"
+                              className="flex h-6 w-6 items-center justify-center rounded-md bg-white dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 shadow-sm hover:text-zinc-900 dark:hover:text-zinc-100 active:scale-95 transition-colors"
                             >
                               <Minus className="h-3 w-3" />
                             </button>
-                            <span className="w-8 text-center text-sm font-bold select-none">{item.quantity}</span>
+                            <span className="w-8 text-center text-sm font-bold select-none text-zinc-900 dark:text-zinc-100">{item.quantity}</span>
                             <button 
                               onClick={() => updateQuantity(item.cartItemId, 1)}
-                              className="flex h-6 w-6 items-center justify-center rounded-md bg-white text-zinc-500 shadow-sm hover:text-zinc-900 active:scale-95"
+                              className="flex h-6 w-6 items-center justify-center rounded-md bg-white dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 shadow-sm hover:text-zinc-900 dark:hover:text-zinc-100 active:scale-95 transition-colors"
                             >
                               <Plus className="h-3 w-3" />
                             </button>
@@ -411,14 +411,14 @@ export default function POSPage() {
                              <div className="relative group">
                                 <button 
                                   onClick={() => setDiscount(item.cartItemId, item.discountValue, item.discountType === 'percent' ? 'amount' : 'percent')}
-                                  className="absolute left-1 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-md bg-zinc-100 text-[8px] font-black hover:bg-zinc-200 transition-colors"
+                                  className="absolute left-1 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-md bg-zinc-100 dark:bg-zinc-700 text-[8px] font-black hover:bg-zinc-200 dark:hover:bg-zinc-600 transition-colors dark:text-zinc-300"
                                   title="Switch Discount Type"
                                 >
                                   {item.discountType === 'percent' ? '%' : 'IQD'}
                                 </button>
                                 <input 
                                   type="number"
-                                  className="w-16 rounded-md border border-zinc-200 bg-white py-1 pl-7 pr-1 text-xs font-bold text-zinc-900 shadow-sm outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                  className="w-16 rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 py-1 pl-7 pr-1 text-xs font-bold text-zinc-900 dark:text-zinc-100 shadow-sm outline-none focus:border-zinc-900 dark:focus:border-teal-600 focus:ring-1 focus:ring-zinc-900 dark:focus:ring-teal-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                   placeholder="0"
                                   value={item.discountValue || ''}
                                   onChange={(e) => setDiscount(item.cartItemId, parseFloat(e.target.value) || 0, item.discountType)}
@@ -426,14 +426,14 @@ export default function POSPage() {
                                 />
                              </div>
                           </div>
- 
+  
                           <div className="text-right flex flex-col items-end">
-                             <div className={cn("text-sm font-black", item.isReturn ? "text-red-600" : "text-zinc-900")}>
+                             <div className={cn("text-sm font-black", item.isReturn ? "text-red-600 dark:text-red-400" : "text-zinc-900 dark:text-zinc-100")}>
                                {item.isReturn ? '-' : ''}{Math.abs(item.total).toLocaleString()} IQD
                              </div>
                              <button 
                                onClick={() => toggleCartItem(item.cartItemId)}
-                               className="text-[10px] font-bold text-teal-600 hover:underline flex items-center gap-1 mt-1"
+                               className="text-[10px] font-bold text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-1 mt-1"
                              >
                                {expandedCartItems[item.cartItemId] ? 'Hide Details' : 'Show Details'}
                              </button>
@@ -441,20 +441,20 @@ export default function POSPage() {
                         </div>
                         
                         {expandedCartItems[item.cartItemId] && (
-                           <div className="mt-1 rounded-lg bg-zinc-50 p-3 text-[11px] space-y-1 animate-in slide-in-from-top-2 duration-200">
+                           <div className="mt-1 rounded-lg bg-zinc-50 dark:bg-zinc-800/50 p-3 text-[11px] space-y-1 animate-in slide-in-from-top-2 duration-200">
                               <div className="flex justify-between">
-                                 <span className="text-zinc-500 font-semibold uppercase tracking-wider">Unit Price</span>
-                                 <span className="font-bold text-zinc-900">{item.batch?.price.toLocaleString()} IQD</span>
+                                 <span className="text-zinc-500 dark:text-zinc-400 font-semibold uppercase tracking-wider">Unit Price</span>
+                                 <span className="font-bold text-zinc-900 dark:text-zinc-100">{(item.batch?.price || 0).toLocaleString()} IQD</span>
                               </div>
                               <div className="flex justify-between">
-                                 <span className="text-zinc-500 font-semibold uppercase tracking-wider">Discount ({item.discountType === 'percent' ? `${item.discountValue}%` : 'Fixed'})</span>
-                                 <span className="font-bold text-red-500">
+                                 <span className="text-zinc-500 dark:text-zinc-400 font-semibold uppercase tracking-wider">Discount ({item.discountType === 'percent' ? `${item.discountValue}%` : 'Fixed'})</span>
+                                 <span className="font-bold text-red-500 dark:text-red-400">
                                    -{ (item.discountType === 'percent' ? ((item.batch?.price || 0) * (item.discountValue / 100)) : item.discountValue).toLocaleString() } IQD
                                  </span>
                               </div>
-                              <div className="flex justify-between border-t border-zinc-200 pt-1 mt-1">
-                                 <span className="text-zinc-500 font-semibold uppercase tracking-wider">Final Price</span>
-                                 <span className="font-bold text-teal-600">
+                              <div className="flex justify-between border-t border-zinc-200 dark:border-zinc-700 pt-1 mt-1">
+                                 <span className="text-zinc-500 dark:text-zinc-400 font-semibold uppercase tracking-wider">Final Price</span>
+                                 <span className="font-bold text-teal-600 dark:text-teal-400">
                                    {( (item.batch?.price || 0) - (item.discountType === 'percent' ? ((item.batch?.price || 0) * (item.discountValue / 100)) : item.discountValue) ).toLocaleString()} IQD
                                  </span>
                               </div>
@@ -467,46 +467,46 @@ export default function POSPage() {
           </div>
 
           {/* Totals Area */}
-          <div className="bg-white p-5 border-t border-zinc-200/80 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)]">
+          <div className="bg-white dark:bg-zinc-900 p-5 border-t border-zinc-200/80 dark:border-zinc-800 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)]">
             
             <div className="space-y-3 mb-5">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-zinc-500 font-semibold uppercase tracking-widest">{t('subtotal')}</span>
-                <span className={cn("font-bold", cartItemsSubtotal < 0 ? "text-red-600" : "text-zinc-900")}>{cartItemsSubtotal.toLocaleString()} {t('currency')}</span>
+                <span className="text-zinc-500 dark:text-zinc-400 font-semibold uppercase tracking-widest">{t('subtotal')}</span>
+                <span className={cn("font-bold", cartItemsSubtotal < 0 ? "text-red-600 dark:text-red-400" : "text-zinc-900 dark:text-zinc-100")}>{cartItemsSubtotal.toLocaleString()} {t('currency')}</span>
               </div>
               
               {cartData.length > 0 && (
-                <div className="py-2 border-y border-zinc-100 my-2">
+                <div className="py-2 border-y border-zinc-100 dark:border-zinc-800 my-2">
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Apply Cart Discount</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500">Apply Cart Discount</span>
                     <button 
                       onClick={() => setCartDiscount(cartDiscountValue, cartDiscountType === 'percent' ? 'amount' : 'percent')}
-                      className="h-6 px-2 rounded-md bg-zinc-100 text-[8px] font-black hover:bg-zinc-200 transition-colors border border-zinc-200"
+                      className="h-6 px-2 rounded-md bg-zinc-100 dark:bg-zinc-800 text-[8px] font-black hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors border border-zinc-200 dark:border-zinc-800 dark:text-zinc-300"
                     >
                       {cartDiscountType === 'percent' ? 'USE IQD' : 'USE %'}
                     </button>
                   </div>
                   <div className="relative">
-                    <Tag className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-300" />
+                    <Tag className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-300 dark:text-zinc-600" />
                     <Input 
                       type="number"
                       placeholder="0"
                       value={cartDiscountValue || ''}
                       onChange={(e) => setCartDiscount(parseFloat(e.target.value) || 0, cartDiscountType)}
-                      className="h-10 border-zinc-200 bg-zinc-50/50 pl-10 text-sm font-bold shadow-none focus:bg-white focus:ring-zinc-900"
+                      className="h-10 border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/50 pl-10 text-sm font-bold shadow-none focus:bg-white dark:focus:bg-zinc-800 focus:ring-zinc-900 dark:focus:ring-teal-600 dark:text-zinc-100"
                     />
                   </div>
                 </div>
               )}
 
               <div className="flex items-center justify-between text-xs">
-                <span className="text-zinc-500 font-semibold uppercase tracking-widest">{t('discount')}</span>
-                <span className="font-bold text-red-500">-{totalDiscount.toLocaleString()} {t('currency')}</span>
+                <span className="text-zinc-500 dark:text-zinc-400 font-semibold uppercase tracking-widest">{t('discount')}</span>
+                <span className="font-bold text-red-500 dark:text-red-400">-{totalDiscount.toLocaleString()} {t('currency')}</span>
               </div>
               
-              <div className="mt-2 rounded-xl bg-zinc-900 px-4 py-3 text-white shadow-lg shadow-zinc-900/20">
+              <div className="mt-2 rounded-xl bg-zinc-900 dark:bg-zinc-800 px-4 py-3 text-white shadow-lg shadow-zinc-900/20">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{t('grand_total')}</span>
+                  <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{t('grand_total')}</span>
                   <div className="text-end">
                     <span className={cn("block text-2xl font-black tracking-tight leading-none", subtotal < 0 && "text-red-400")}>
                       {subtotal.toLocaleString()} <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">{t('currency')}</span>
@@ -517,19 +517,19 @@ export default function POSPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-3 mb-3">
-              <Button variant="outline" className="h-10 w-full text-xs font-bold" onClick={clearCart}>
+              <Button variant="outline" className="h-10 w-full text-xs font-bold dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800" onClick={clearCart}>
                 {t('clear_cart')}
               </Button>
-              <Button variant="secondary" className="h-10 w-full text-xs font-bold gap-2" onClick={holdCart} disabled={cart.length === 0}>
+              <Button variant="secondary" className="h-10 w-full text-xs font-bold gap-2 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700" onClick={holdCart} disabled={cart.length === 0}>
                 <PauseCircle className="h-4 w-4" /> {t('hold_cart')}
               </Button>
             </div>
             
             {heldCarts.length > 0 && (
               <div className="mb-3 space-y-2">
-                <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Held Transactions</div>
+                <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">Held Transactions</div>
                 {heldCarts.map(hc => (
-                   <Button key={hc.id} variant="outline" className="w-full h-10 text-xs font-bold justify-between bg-amber-50/50 border-amber-200 text-amber-700 hover:bg-amber-100" onClick={() => resumeCart(hc.id)}>
+                   <Button key={hc.id} variant="outline" className="w-full h-10 text-xs font-bold justify-between bg-amber-50/50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/20" onClick={() => resumeCart(hc.id)}>
                       <div className="flex items-center gap-2"><PlayCircle className="h-4 w-4" /> Resume Cart</div>
                       <span>{hc.cart.length} items</span>
                    </Button>
@@ -539,7 +539,7 @@ export default function POSPage() {
 
             <Button 
               size="lg" 
-              className={cn("w-full h-14 text-base font-black shadow-xl transition-all active:scale-[0.98]", isShiftOpen ? (subtotal < 0 ? "bg-red-600 hover:bg-red-700 text-white shadow-red-600/20" : "bg-teal-600 hover:bg-teal-700 text-white shadow-teal-600/20") : "bg-zinc-200 text-zinc-400 cursor-not-allowed shadow-none")}
+              className={cn("w-full h-14 text-base font-black shadow-xl transition-all active:scale-[0.98]", isShiftOpen ? (subtotal < 0 ? "bg-red-600 hover:bg-red-700 text-white shadow-red-600/20" : "bg-teal-600 hover:bg-teal-700 text-white shadow-teal-600/20") : "bg-zinc-200 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 cursor-not-allowed shadow-none")}
               disabled={cart.length === 0 || !isShiftOpen}
               onClick={() => {
                 if (isShiftOpen) setPaymentModalOpen(true);
@@ -560,28 +560,28 @@ export default function POSPage() {
       {/* Product Details Modal */}
       {selectedProductDetails && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/60 p-4 backdrop-blur-sm" onClick={() => setSelectedProductDetails(null)}>
-          <div className="w-full max-w-md rounded-3xl bg-white shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
-             <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50/50 px-6 py-4">
-                <div className="flex items-center gap-3 text-zinc-900">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-zinc-400 border border-zinc-200/50 shadow-sm">
+          <div className="w-full max-w-md rounded-3xl bg-white dark:bg-zinc-900 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 border border-zinc-200 dark:border-zinc-800" onClick={e => e.stopPropagation()}>
+             <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/50 px-6 py-4">
+                <div className="flex items-center gap-3 text-zinc-900 dark:text-zinc-100">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 border border-zinc-200/50 dark:border-zinc-700 shadow-sm">
                      {selectedProductDetails.category.toLowerCase().includes('syrup') || selectedProductDetails.category.toLowerCase().includes('gastro') || selectedProductDetails.category.toLowerCase().includes('respiratory') ? <FlaskConical className="h-5 w-5" /> : selectedProductDetails.category.toLowerCase().includes('topical') ? <Droplet className="h-5 w-5" /> : <Pill className="h-5 w-5" />}
                   </div>
-                  <h3 className="font-bold text-lg">Product Details</h3>
+                  <h3 className="font-bold text-lg text-zinc-900 dark:text-zinc-100">Product Details</h3>
                 </div>
-                <button onClick={() => setSelectedProductDetails(null)} className="text-zinc-400 hover:text-zinc-600">
+                <button onClick={() => setSelectedProductDetails(null)} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300">
                   <Trash2 className="h-5 w-5 hidden" /> {/* dummy icon for standardizing x shape if needed */}
                   <span className="text-xl leading-none">&times;</span>
                 </button>
              </div>
              
              <div className="p-6">
-                <div className="mb-6 border-b border-zinc-100 pb-6">
-                  <h4 className="text-2xl font-black text-zinc-900">{selectedProductDetails.brandName}</h4>
-                  <p className="text-sm font-semibold text-zinc-500 mt-1">{selectedProductDetails.genericName}</p>
-                  <p className="mt-2 inline-flex rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-bold text-zinc-600">{selectedProductDetails.category}</p>
+                <div className="mb-6 border-b border-zinc-100 dark:border-zinc-800 pb-6">
+                  <h4 className="text-2xl font-black text-zinc-900 dark:text-zinc-100">{selectedProductDetails.brandName}</h4>
+                  <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 mt-1">{selectedProductDetails.genericName}</p>
+                  <p className="mt-2 inline-flex rounded-full bg-zinc-100 dark:bg-zinc-800 px-2.5 py-0.5 text-xs font-bold text-zinc-600 dark:text-zinc-300">{selectedProductDetails.category}</p>
                 </div>
                 
-                <h5 className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-3">Available Batches</h5>
+                <h5 className="text-xs font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-3">Available Batches</h5>
                 <div className="space-y-2 mb-6 max-h-48 overflow-y-auto pr-2">
                    {selectedProductDetails.batches.map((batch: any) => {
                      const isSelected = selectedBatchId === batch.id;
@@ -594,24 +594,24 @@ export default function POSPage() {
                          className={cn(
                            "w-full flex justify-between items-center p-3 rounded-xl border transition-all text-left",
                            isSelected 
-                             ? "bg-teal-50 border-teal-200 ring-2 ring-teal-500/20 shadow-sm" 
+                             ? "bg-teal-50 dark:bg-teal-900/20 border-teal-200 dark:border-teal-800 ring-2 ring-teal-500/20 shadow-sm" 
                              : isOutOfStock 
-                               ? "bg-zinc-50 border-zinc-100 opacity-60 cursor-not-allowed" 
-                               : "bg-white border-zinc-100 hover:border-zinc-300 hover:bg-zinc-50"
+                               ? "bg-zinc-50 dark:bg-zinc-800/50 border-zinc-100 dark:border-zinc-800 opacity-60 cursor-not-allowed" 
+                               : "bg-white dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800"
                          )}
                        >
                           <div>
                             <div className="flex items-center gap-2">
-                              <div className={cn("h-2 w-2 rounded-full", isSelected ? "bg-teal-500" : "bg-zinc-300")}></div>
-                              <div className="font-bold text-sm text-zinc-900">Batch {batch.batchNo}</div>
+                              <div className={cn("h-2 w-2 rounded-full", isSelected ? "bg-teal-500" : "bg-zinc-300 dark:bg-zinc-600")}></div>
+                              <div className="font-bold text-sm text-zinc-900 dark:text-zinc-100">Batch {batch.batchNo}</div>
                             </div>
-                            <div className={cn("text-[10px] font-bold uppercase tracking-wider mt-1 ml-4", isOutOfStock ? "text-red-500" : "text-emerald-500")}>
+                            <div className={cn("text-[10px] font-bold uppercase tracking-wider mt-1 ml-4", isOutOfStock ? "text-red-500 dark:text-red-400" : "text-emerald-500 dark:text-emerald-400")}>
                                {isOutOfStock ? 'Out of stock' : `${batch.quantity} in stock`}
                             </div>
                           </div>
                           <div className="text-right">
-                            <div className="font-bold text-teal-600">{batch.price.toLocaleString()} IQD</div>
-                            <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mt-1">Exp: {batch.expiryDate}</div>
+                            <div className="font-bold text-teal-600 dark:text-teal-400">{(batch?.price || 0).toLocaleString()} IQD</div>
+                            <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mt-1">Exp: {batch?.expiryDate}</div>
                           </div>
                        </button>
                      );
@@ -619,7 +619,7 @@ export default function POSPage() {
                 </div>
 
                 <Button 
-                  className="w-full h-14 bg-zinc-900 shadow-lg font-bold text-base hover:bg-zinc-800 transition-all active:scale-[0.98]"
+                  className="w-full h-14 bg-zinc-900 dark:bg-teal-600 shadow-lg font-bold text-base text-white hover:bg-zinc-800 dark:hover:bg-teal-700 transition-all active:scale-[0.98] dark:shadow-teal-600/20"
                   disabled={!selectedBatchId}
                   onClick={() => selectedBatchId && handleAddToCart(selectedProductDetails, selectedBatchId)}
                 >

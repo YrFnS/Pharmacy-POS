@@ -201,6 +201,7 @@ interface POSState {
   updateProduct: (product: Product) => void;
   deleteProduct: (id: string) => void;
   receiveStock: (productId: string, batch: Omit<Batch, 'id'>) => void;
+  writeOffBatch: (productId: string, batchId: string) => void;
 
   addCustomer: (customer: Omit<Customer, 'id' | 'debt'>) => void;
   updateCustomer: (customer: Customer) => void;
@@ -277,6 +278,13 @@ export const useStore = create<POSState>((set, get) => ({
     products: state.products.map(p => 
       p.id === productId 
         ? { ...p, batches: [...p.batches, { ...batch, id: generateId() }] }
+        : p
+    )
+  })),
+  writeOffBatch: (productId, batchId) => set(state => ({
+    products: state.products.map(p => 
+      p.id === productId 
+        ? { ...p, batches: p.batches.filter(b => b.id !== batchId) }
         : p
     )
   })),
